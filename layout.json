@@ -1,0 +1,844 @@
+{
+  "version": 2,
+  "extras": [
+    {
+      "id": "upload-level-4",
+      "name": "level-4",
+      "url": "models/uploads/level-4.glb"
+    },
+    {
+      "id": "upload-level-5",
+      "name": "level-5",
+      "url": "models/uploads/level-5.glb"
+    },
+    {
+      "id": "upload-level-6",
+      "name": "level-6",
+      "url": "models/uploads/level-6.glb"
+    },
+    {
+      "id": "upload-level-1",
+      "name": "level-1",
+      "url": "models/uploads/level-1.glb"
+    }
+  ],
+  "levels": [
+    {
+      "id": "level-2",
+      "offset": [
+        0,
+        38.8304117562966,
+        -75.90052499817978
+      ],
+      "rotation": 0,
+      "visible": true
+    },
+    {
+      "id": "level-3",
+      "offset": [
+        0,
+        67.80431825717909,
+        -160.82897669183367
+      ],
+      "rotation": 0,
+      "visible": true
+    },
+    {
+      "id": "upload-level-4",
+      "offset": [
+        0,
+        99.43671976848407,
+        -250.48671357557168
+      ],
+      "rotation": 0,
+      "visible": true
+    },
+    {
+      "id": "upload-level-5",
+      "offset": [
+        2.0884832905126913,
+        124.490438739485,
+        -334.34461013745005
+      ],
+      "rotation": 0,
+      "visible": true
+    },
+    {
+      "id": "upload-level-6",
+      "offset": [
+        2.923977608580003,
+        146.4736738459102,
+        -396.39030519811126
+      ],
+      "rotation": 0,
+      "visible": true
+    },
+    {
+      "id": "upload-level-1",
+      "offset": [
+        0,
+        0,
+        15.025830582276168
+      ],
+      "rotation": 0,
+      "visible": true
+    }
+  ],
+  "labels": [
+    {
+      "text": "Staircase",
+      "levelId": "level-3",
+      "position": [
+        28.77338044692069,
+        1.6464842013703702,
+        -1.5494832488787011
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-3",
+      "position": [
+        -36.56156199698981,
+        1.4778724225554214,
+        11.842202630638326
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.8
+    },
+    {
+      "text": "Toilet",
+      "levelId": "level-3",
+      "position": [
+        -42,
+        1.4778724225554214,
+        16.040667178741472
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-3",
+      "position": [
+        35.64,
+        1.4778724225554214,
+        -25.30415944001237
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-3",
+      "position": [
+        -37.28485723555203,
+        1.4778724225554214,
+        -26.676379497099333
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.8
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-3",
+      "position": [
+        -2.161598182930561,
+        1.4778724225554214,
+        -27.217169642776923
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.8
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-3",
+      "position": [
+        -3.912361835295923,
+        1.4778724225554214,
+        16.668317137423713
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "level-3",
+      "position": [
+        35.32218021813324,
+        1.4778724225554214,
+        -6.005188545811734
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "level-2",
+      "position": [
+        -43.44319472309681,
+        0.004058666963302926,
+        15.711703932030304
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-2",
+      "position": [
+        -36.85541889863172,
+        0.004058666963302926,
+        12.359785705598451
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "level-2",
+      "position": [
+        31.847838172016942,
+        0.004058666963302926,
+        -4.200478174763887
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-2",
+      "position": [
+        28.483817971017288,
+        0.004058666963302926,
+        3.5744356834811164
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-2",
+      "position": [
+        -36.86,
+        0.004058666963302926,
+        -26.806122419409967
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-2",
+      "position": [
+        -1.4379564760763497,
+        0.004058666963302926,
+        -29.01439950680423
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-2",
+      "position": [
+        -3.027501049398265,
+        0.004058666963302926,
+        14.686937901832884
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Mediated Learning Lab",
+      "levelId": "level-3",
+      "position": [
+        -41.35581522454323,
+        5.445805455662239,
+        4.090002617911679
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Higher MT Room",
+      "levelId": "level-3",
+      "position": [
+        -41.35581522454323,
+        5.445805455662239,
+        -6.216478425119391
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "CoLabs 1, 2, 3",
+      "levelId": "level-3",
+      "position": [
+        -41.35581522454323,
+        5.448925557545024,
+        -17.287513894459508
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "School Library",
+      "levelId": "level-3",
+      "position": [
+        4.799031040184515,
+        5.618797433959983,
+        -9.716712265333399
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Level 3",
+      "levelId": "level-3",
+      "position": [
+        -16.564943163529087,
+        5.618797433959983,
+        -6.063926588429766
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Computer Lab 3",
+      "levelId": "level-2",
+      "position": [
+        -43.060942280714144,
+        6.133614994196414,
+        6.068051741029549
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Computer Lab 4",
+      "levelId": "level-2",
+      "position": [
+        -43.060942280714144,
+        6.133614994196414,
+        -6.574369022449787
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Level 2",
+      "levelId": "level-2",
+      "position": [
+        -16.74151173371954,
+        1.8750022649765015,
+        0
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Staircase",
+      "levelId": "level-2",
+      "position": [
+        33.11268946224985,
+        0.004058666963302926,
+        -33.00597548176967
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Level 4",
+      "levelId": "upload-level-4",
+      "position": [
+        -1.6556682480756102,
+        1.8749999403953552,
+        0
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-4",
+      "position": [
+        35.64,
+        1.8215644684078,
+        -15.836166715066724
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-4",
+      "position": [
+        33.82774703422673,
+        1.8215644684078,
+        20.922854324170856
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-4",
+      "position": [
+        -36.166177561609814,
+        1.8215644684078,
+        19.67527372548679
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-4",
+      "position": [
+        -36.166177561609814,
+        1.8215644684078,
+        -19.865631047062806
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-4",
+      "position": [
+        -2.626604791969136,
+        1.8215644684078,
+        -19.865631047062806
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "upload-level-4",
+      "position": [
+        -43.51082200084103,
+        1.8232712908192212,
+        25.245549499738047
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "upload-level-4",
+      "position": [
+        34.47713257718283,
+        1.8232712908192212,
+        13.146634895218227
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Chemistry Labs",
+      "levelId": "upload-level-4",
+      "position": [
+        47.13026299419378,
+        5.124748608668014,
+        -4.38244746233471
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Level 5",
+      "levelId": "upload-level-5",
+      "position": [
+        -10.52000243961811,
+        1.8749999403953552,
+        8.305255586316719
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Toilet",
+      "levelId": "upload-level-5",
+      "position": [
+        -6.340170064416574,
+        3.1695524390275693,
+        12.354012992778962
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-5",
+      "position": [
+        -6,
+        3.1667977198940775,
+        18.20668736908499
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-5",
+      "position": [
+        -6,
+        3.1667977198940775,
+        -16.19287749728977
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Physics Labs",
+      "levelId": "upload-level-5",
+      "position": [
+        2.49037976188108,
+        5.329736953427528,
+        5.067917356150133
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 0.9
+    },
+    {
+      "text": "Level 6",
+      "levelId": "upload-level-6",
+      "position": [
+        -10.52000243961811,
+        1.8749999403953552,
+        0
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-6",
+      "position": [
+        -5.594417830622765,
+        1.909823453885764,
+        19.33157901970094
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Staircase",
+      "levelId": "upload-level-6",
+      "position": [
+        -5.594417830622765,
+        1.909823453885764,
+        -17.740943338844716
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "upload-level-6",
+      "position": [
+        -5.593977608580003,
+        1.9063174518116455,
+        15.016911128918366
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Level 1",
+      "levelId": "upload-level-1",
+      "position": [
+        -19.758888816223404,
+        1.8749999403953552,
+        3.9451891243373183
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Toilet",
+      "levelId": "upload-level-1",
+      "position": [
+        34.779103805752094,
+        2.5229386745063636,
+        -2.653287454070716
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Toilet",
+      "levelId": "upload-level-1",
+      "position": [
+        -37.30377212497179,
+        2.5229386745063636,
+        17.842492962310605
+      ],
+      "visible": true,
+      "icon": "toilet",
+      "size": 0.9
+    },
+    {
+      "text": "Stairs",
+      "levelId": "upload-level-1",
+      "position": [
+        -37.76379508307885,
+        2.5199912977218624,
+        9.469244198995323
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Stairs",
+      "levelId": "upload-level-1",
+      "position": [
+        -37.76379508307885,
+        2.5199912977218624,
+        -27.173465711126976
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Stairs",
+      "levelId": "upload-level-1",
+      "position": [
+        35.69677075666162,
+        2.5199912977218624,
+        -27.173465711126976
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Stairs",
+      "levelId": "upload-level-1",
+      "position": [
+        35.69677075666162,
+        2.5199912977218624,
+        3.5528062006005037
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Stairs",
+      "levelId": "upload-level-1",
+      "position": [
+        -1.9984737461430981,
+        2.5199912977218624,
+        -27.173465711126976
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "Stairs",
+      "levelId": "upload-level-1",
+      "position": [
+        -1.9984737461430981,
+        2.5199912977218624,
+        13.871558589330792
+      ],
+      "visible": true,
+      "icon": "stairs",
+      "size": 0.9
+    },
+    {
+      "text": "General Office",
+      "levelId": "upload-level-1",
+      "position": [
+        -7.869128955092885,
+        6.038462433594091,
+        21.17797634010175
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "General\nOffice | floor"
+      ]
+    },
+    {
+      "text": "Bookshop",
+      "levelId": "upload-level-1",
+      "position": [
+        0.15461139501022458,
+        6.038462433594091,
+        33.494759076850144
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "Admin /\nBookshop | floor"
+      ]
+    },
+    {
+      "text": "School Canteen",
+      "levelId": "upload-level-1",
+      "position": [
+        9.879003226734227,
+        6.038462433594091,
+        26.11072562564142
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "Canteen | floor"
+      ]
+    },
+    {
+      "text": "MakerXpace",
+      "levelId": "upload-level-1",
+      "position": [
+        -42.62294000443502,
+        6.038462433594091,
+        -5.9221099844954
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "Computer 02 | floor"
+      ]
+    },
+    {
+      "text": "Computer Lab 1",
+      "levelId": "upload-level-1",
+      "position": [
+        -42.75776191128102,
+        6.038462433594091,
+        7.657170812214201
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "Computer 01 | floor"
+      ]
+    },
+    {
+      "text": "Smart rooms",
+      "levelId": "upload-level-1",
+      "position": [
+        -34.88915183721613,
+        7.759367698387365,
+        -32.220601009148716
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "Room 01 | floor",
+        "Room 02 | floor"
+      ]
+    },
+    {
+      "text": "Parade Square",
+      "levelId": "upload-level-1",
+      "position": [
+        -14.629546255999317,
+        6.038462433594091,
+        -5.803923203764889
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "Design and Technology \nWorkshops",
+      "levelId": "upload-level-1",
+      "position": [
+        51.04468950959531,
+        6.038462433594091,
+        -14.468788798470221
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1,
+      "blocks": [
+        "Design & Technology\nWorkshop 01 | floor",
+        "Wood Machine\nWorkshop | floor"
+      ]
+    },
+    {
+      "text": "Design and Technology \nWorkshops",
+      "levelId": "level-2",
+      "position": [
+        55.683486883356,
+        6.133614994196414,
+        -15.377420489844809
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    },
+    {
+      "text": "School Hall",
+      "levelId": "level-2",
+      "position": [
+        8.023538188531077,
+        6.133614994196414,
+        26.833279013420288
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
+    }
+  ]
+}

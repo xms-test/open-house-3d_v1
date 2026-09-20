@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Xinmin Sec School Map</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.item-list{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
+.lvl{display:flex;gap:3px;min-width:0}
+.lvl>button:first-child{flex:1;min-width:0}
+.item-list .eye{flex:none;padding:0 6px;font-size:13px;line-height:1}
+.item-list .eye.off{opacity:.6;background:#f3f5f6}
+.item-list button{padding:11px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-list button.active{border-color:#247d72;color:#176b65;background:#edf7f3;font-weight:bold}
+.small{padding:6px 10px;font-size:11px}
+.danger{color:#a33232}
+.empty{font-size:11px;color:#8b979e;margin:0 0 8px}
+.label-row{display:flex;gap:6px;margin-bottom:6px}
+.label-row input,.label-row textarea{flex:1;min-width:0;padding:9px;border:1px solid #dce3e6;border-radius:7px;font-size:12px;line-height:1.3;font-family:inherit;background:#fff;resize:none;overflow:hidden;display:block}
+.label-row.active input,.label-row.active textarea{border-color:#247d72;background:#edf7f3}
+.label-row button{padding:6px 10px}
+.ic{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;border:2px solid #fff;box-shadow:0 2px 6px #0000003a}
+.ic svg{width:22px;height:22px;fill:#fff}
+.ic svg .s{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.icon-marker{position:absolute;pointer-events:none;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px}
+.icon-marker .cap{font-size:11px;font-weight:700;color:#273b43;background:#ffffffe8;padding:2px 6px;border-radius:6px;white-space:pre;text-align:center}
+.grip{cursor:grab;color:#9aa7ad;align-self:center;padding:0 2px;user-select:none;font-size:14px;letter-spacing:-3px;flex:none}
+.grip:hover{color:#247d72}
+.level-head{font-size:11px;font-weight:700;letter-spacing:.4px;color:#176b65;background:#edf7f3;border-radius:7px;padding:6px 9px;margin:12px 0 6px;cursor:pointer}
+.ic.bare{width:auto;height:auto;background:none;border:0;box-shadow:none}
+.ic.bare svg{width:32px;height:32px;filter:drop-shadow(0 2px 2px #0004)}
+.label-row .ic.bare svg{width:26px;height:26px}
+.icon-marker.pin{transform:translate(-50%,-100%) scale(var(--own,1));transform-origin:50% 100%;flex-direction:column-reverse}
+#labels,#legend,#zoom,#status,.level-head{user-select:none;-webkit-user-select:none}
+.level-head:first-child{margin-top:0}
+.level-head{display:flex;align-items:center;justify-content:space-between}
+.level-head button{padding:3px 8px;font-size:10px}
+.block-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0;font-size:12px}
+#block-chips{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:5px;color:#556b73}
+#block-chips .chip{display:inline-flex;align-items:center;gap:4px;background:#fdecea;color:#b71c1c;border-radius:999px;padding:2px 4px 2px 9px;max-width:100%}
+#block-chips .chip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 5px;font-size:14px;line-height:1}
+#pick-banner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:30;background:#c62828;color:#fff;font:600 13px/1.3 sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 4px 14px #0004;pointer-events:none;max-width:90vw;text-align:center}
+.label-row.dragging{opacity:.4}
+.label-row.drop-above{box-shadow:0 -2px 0 #247d72}
+.label-row.drop-below{box-shadow:0 2px 0 #247d72}
+.label-row .ic{flex:none;width:30px;height:30px;border-radius:7px;align-self:center}
+.label-row .ic svg{width:18px;height:18px}
+.cat-title{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.6px;color:#647780;margin:12px 0 6px;font-weight:700}
+.cat-title i{width:8px;height:8px;border-radius:50%}
+.icon-grid{display:flex;flex-wrap:wrap;gap:6px}
+.icon-btn{padding:3px;border-radius:11px;line-height:0}
+.level-label{transform:translate(-100%,-50%) scale(var(--own,1));transform-origin:100% 50%;pointer-events:auto;cursor:pointer;padding:2px 5px;border-radius:6px;white-space:pre;text-align:center}
+.icon-marker{transform:translate(-50%,-50%) scale(var(--own,1));transform-origin:50% 50%;pointer-events:auto;cursor:pointer;padding:3px;border-radius:10px}
+.level-label.sel,.icon-marker.sel{outline:2px solid #247d72;outline-offset:1px;background:#ffffffb0}
+#zoom{position:absolute;top:24px;right:24px;z-index:2;font-size:11px;color:#455a64;background:#ffffffe8;border:1px solid #e1e7ea;border-radius:8px;padding:7px 11px;pointer-events:none;font-variant-numeric:tabular-nums}
+#zoom b{color:#176b65}
+.size-row{display:flex;align-items:center;gap:10px;font-size:11px;color:#455a64;margin:4px 0 12px}
+.size-row input{flex:1;accent-color:#176b65}
+.size-row .num{display:flex;align-items:center;gap:3px;color:#176b65;font-weight:bold}
+.size-row .num input{flex:none;width:76px;padding:6px 7px;border:1px solid #dce3e6;border-radius:7px;font-size:12px;text-align:right;background:#fff;accent-color:auto}
+#legend{position:absolute;left:25px;bottom:44px;display:flex;flex-direction:column;gap:5px;font-size:11px;color:#455a64;pointer-events:none}
+#legend span{display:flex;align-items:center;gap:6px;background:#ffffffe8;padding:3px 8px;border-radius:6px;width:max-content}
+#legend i{width:9px;height:9px;border-radius:3px}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="brand-icon">▱</span><div><strong>Xinmin Sec School Map</strong><small>OPEN HOUSE · 3D LEVEL EDITOR</small></div></div>
+  <div class="actions"><button id="import">Open layout</button><button id="save">Save layout</button></div>
+</header>
+<main>
+  <section id="viewport" aria-label="Interactive 3D campus">
+    <div class="view-tools"><button id="fit">Fit all</button></div>
+    <div id="status" role="status">Loading your models…</div>
+    <div class="viewport-bottom"><span><i></i> White canvas</span><span>Drag to orbit · Right-drag to pan · Scroll to zoom</span></div>
+    <div id="labels"></div>
+    <div id="legend"></div>
+    <div id="zoom" aria-live="off">Zoom distance: –</div>
+  </section>
+  <aside>
+    <div class="eyebrow">YOUR CAMPUS</div>
+    <h1>Arrange your levels.</h1>
+    <p class="intro">Levels are stacked bottom to top. Select a level or label to move it.</p>
+
+    <div class="section-title"><h3>Levels</h3><button id="add-glb" class="small">+ Add GLB</button></div>
+    <div id="levels" class="item-list"></div>
+
+    <fieldset id="editor" disabled>
+      <div class="section-title"><h2 id="selected-title">Nothing selected</h2><label class="check"><input id="visible" type="checkbox" checked>Visible</label></div>
+      <div class="section-title"><h3>Position</h3><span>model units</span></div>
+      <div class="triple">
+        <label>Left / right · X<input id="x" type="number" step="1" min="-10000" max="10000"></label>
+        <label>Elevation · Y<input id="y" type="number" step="1" min="-10000" max="10000"></label>
+        <label>Front / back · Z<input id="z" type="number" step="1" min="-10000" max="10000"></label>
+      </div>
+      <label class="rotation" id="rotation-row">Rotation <input id="rotation" type="number" step="5" min="-360" max="360"><span>°</span></label>
+      <label class="size-row" id="own-size-row">Size <input id="own-size" type="range" min="30" max="400" step="10" value="100"><span class="num"><input id="own-size-num" type="number" min="10" max="1000" step="10" value="100" aria-label="Label size in percent">%</span></label>
+      <div class="block-row" id="block-row"><div id="block-chips"></div><button id="block-pick" class="small">Choose blocks</button><button id="block-clear" class="small">Clear all</button></div>
+      <label class="check gizmo"><input id="gizmo" type="checkbox" checked>Show position handles</label>
+      <button id="duplicate" class="full" style="margin-bottom:8px">Duplicate this label</button>
+      <button id="remove" class="full danger">Remove selected</button>
+    </fieldset>
+
+    <div class="divider"></div>
+    <div class="section-title"><h3>Labels</h3><button id="add-label" class="small">+ Add label</button></div>
+    <div id="label-list"></div>
+    <p class="hint">Ctrl/Shift+click labels (here or on the map) to select several and move them together, or use “Select all” on a level. Drag the ⋮⋮ grip to reorder (or press Alt+↑ / Alt+↓ in a label's text box). A new label is added to the selected level.</p>
+
+    <div class="divider"></div>
+    <div class="section-title"><h3>Icons</h3><span>click to add</span></div>
+    <div id="icon-palette"></div>
+    <p class="hint">Icons of the same kind share a colour. Each one appears in the Labels list above, where you can edit its caption or remove it.</p>
+
+    <div class="saved" id="saved">Changes are saved in this browser.</div>
+    <p class="footnote">Your original GLB files remain unchanged.</p>
+  </aside>
+</main>
+<input id="file" type="file" accept=".json,application/json" hidden>
+<input id="glb-file" type="file" accept=".glb" multiple hidden>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {TransformControls} from 'three/addons/controls/TransformControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
+// The levels that load automatically from the models folder, stacked in this order (bottom to top).
+const DEFAULTS = [
+  {id: 'level-2', name: 'Level 2', url: './models/level-2.glb', label: 'Level 2 · Second level'},
+  {id: 'level-3', name: 'Level 3', url: './models/level-3.glb', label: 'Level 3 · Third level'},
+];
+
+// Icon categories: icons of the same nature share a colour and a heading.
+const CATS = {
+  access:  {name: 'Toilets & access', color: '#1b8fd0'},
+  nav:     {name: 'Navigation',       color: '#23996b'},
+  pin:     {name: 'Pin', color: '#ea4f41'},
+};
+// Glyphs are drawn on a 24x24 grid. Filled by default; class="s" means stroked.
+const ICONS = {
+  toilet:   {name: 'Toilet', cat: 'access', g: '<circle cx="7" cy="5" r="1.9"/><path d="M4.4 9h5.2v6.2H8.2V20H5.8v-4.8H4.4z"/><rect x="11.55" y="3" width=".9" height="18"/><circle cx="17" cy="5" r="1.9"/><path d="M17 8.6l3.5 7.2h-1.7V20h-3.6v-4.2h-1.7z"/>'},
+  stairs:   {name: 'Stairs', cat: 'nav', g: '<path class="s" d="M4 20h4.5v-4.2H13v-4.2h4.5V7.5H20"/>'},
+  // `bare` = drawn without a coloured tile.
+  pin:      {name: 'Pin', cat: 'pin', bare: true, g: '<path fill="#ea4f41" d="M12 1.5C7.3 1.5 3.5 5.2 3.5 9.8c0 6.3 8.5 12.7 8.5 12.7s8.5-6.4 8.5-12.7C20.5 5.2 16.7 1.5 12 1.5z"/><circle fill="#c0392b" cx="12" cy="9.8" r="5.3"/><circle fill="#fff" cx="12" cy="9.8" r="3.1"/>'},
+};
+const iconBadge = key => ICONS[key].bare
+  ? `<span class="ic bare"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[key].g}</svg></span>`
+  : `<span class="ic" style="background:${CATS[ICONS[key].cat].color}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[key].g}</svg></span>`;
+const isPin = l => l.icon === 'pin';
+
+const $ = id => document.getElementById(id);
+const host = $('viewport');
+const KEY = 'campus-studio-layout-v2';
+const V3 = THREE.Vector3;
+
+// ---------- scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+const camera = new THREE.PerspectiveCamera(38, 1, .05, 100000);
+const renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = .85;
+host.prepend(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8896aa, 1.7));
+const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(-70, 130, 90); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, .55); fill.position.set(80, 50, -70); scene.add(fill);
+
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.maxPolarAngle = Math.PI * .495;
+orbit.maxDistance = Infinity;   // no limit on zooming out
+const handles = new TransformControls(camera, renderer.domElement);
+handles.setMode('translate');
+handles.setSize(.75);
+scene.add(handles.getHelper());
+handles.addEventListener('dragging-changed', e => { orbit.enabled = !e.value; });
+handles.addEventListener('objectChange', () => {
+  if (multi.size && selection?.kind === 'label' && lastPos) moveGroup(worldPos(selection).sub(lastPos));
+  updateFields(); persist();
+});
+
+// Server models are always re-fetched so a replaced GLB shows up on refresh.
+const serverLoader = new GLTFLoader();
+serverLoader.setRequestHeader({'Cache-Control': 'no-cache'});
+const fileLoader = new GLTFLoader();
+
+// ---------- state ----------
+const levels = [];   // {id, name, root, base, home, saved, btn}
+const labels = [];   // {text, level, anchor, el, visible, row, input}
+let selection = null; // {kind: 'level' | 'label', item}
+let ready = false;
+let counter = 0;
+let fitDistance = 0;  // camera distance of the last "Fit all", used as the 1.0x zoom reference
+
+const status = message => { $('status').textContent = message; };
+
+function resize() {
+  const w = host.clientWidth, h = host.clientHeight;
+  camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h);
+}
+new ResizeObserver(resize).observe(host);
+
+function fit() {
+  const b = new THREE.Box3();
+  for (const l of levels) if (l.root.visible) b.union(new THREE.Box3().setFromObject(l.root));
+  if (b.isEmpty()) { status('Nothing to frame yet.'); return; }
+  const center = b.getCenter(new V3());
+  const dir = new V3(.08, 1, .82).normalize();
+  camera.position.copy(center).add(dir); camera.lookAt(center); camera.updateMatrixWorld(true);
+  const rotation = new THREE.Matrix3().setFromMatrix4(camera.matrixWorldInverse);
+  const half = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  let needed = 0;
+  for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) {
+    const p = new V3(x, y, z).sub(center).applyMatrix3(rotation);
+    needed = Math.max(needed, Math.abs(p.y) / half + p.z, Math.abs(p.x) / (half * camera.aspect) + p.z);
+  }
+  const distance = needed * 1.2;
+  fitDistance = Math.min(Math.max(distance, 10), orbit.maxDistance);
+  camera.position.copy(center).addScaledVector(dir, fitDistance);
+  orbit.target.copy(center);
+  camera.near = Math.max(.01, distance / 10000);
+  camera.far = Math.max(100000, distance * 20);   // far plane kept large so the scene isn't clipped when zoomed far out
+  camera.updateProjectionMatrix(); orbit.update();
+}
+
+// ---------- levels ----------
+const topY = () => levels.reduce((m, l) => Math.max(m, l.home.y + l.base.y), 0);
+
+function build(gltf, id, name, saved) {
+  const model = gltf.scene;
+  model.traverse(o => { if (o.isLight || o.isCamera) o.visible = false; });
+  const b = new THREE.Box3().setFromObject(model);
+  if (b.isEmpty()) throw Error(`${name} has no visible geometry.`);
+  const center = b.getCenter(new V3()), base = b.getSize(new V3());
+  model.position.sub(new V3(center.x, b.min.y, center.z)); // centre on x/z, sit on y = 0
+  const root = new THREE.Group(); root.name = name; root.add(model); scene.add(root);
+  const level = {id, name, root, base, home: new V3(0, topY(), 0), saved};
+  root.position.copy(level.home);
+  levels.push(level);
+  return level;
+}
+
+// Re-stack every level bottom to top, keeping any manual offsets the user made.
+function restack() {
+  let cursor = 0;
+  for (const l of levels) {
+    const home = new V3(0, cursor, 0);
+    l.root.position.add(home.clone().sub(l.home));
+    l.home.copy(home);
+    cursor += l.base.y;
+  }
+}
+
+function removeLevel(level) {
+  for (const label of labels.filter(l => l.level === level)) removeLabel(label, false);
+  scene.remove(level.root);
+  level.root.traverse(o => {
+    if (!o.isMesh) return;
+    o.geometry?.dispose();
+    for (const m of [].concat(o.material)) m?.dispose();
+  });
+  levels.splice(levels.indexOf(level), 1);
+  restack();
+}
+
+// ---------- labels ----------
+// Grow a text area to fit its lines (labels can have several lines).
+function autosize(ta, min = 0) { ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight + (ta.offsetHeight - ta.clientHeight), min) + 'px'; }
+// Edit a label's text right where it sits on the map: Enter or click away saves, Esc cancels.
+function renameOnScreen(l) {
+  if (document.getElementById('rename-box')) return;
+  select('label', l);
+  const r = l.el.getBoundingClientRect();
+  const box = document.createElement('textarea');
+  box.id = 'rename-box'; box.value = l.text; box.placeholder = 'Label text'; box.rows = 1;
+  box.setAttribute('aria-label', 'Rename label');
+  Object.assign(box.style, {position: 'fixed', zIndex: 20, left: r.left + 'px', top: r.top + 'px', width: Math.max(r.width + 24, 140) + 'px',
+    boxSizing: 'border-box', font: '12px sans-serif', lineHeight: '1.3', padding: '2px 6px', border: '2px solid #247d72', borderRadius: '6px', background: '#fff', resize: 'none', overflow: 'hidden', whiteSpace: 'pre'});
+  document.body.append(box);
+  autosize(box, Math.max(r.height, 26));
+  box.addEventListener('input', () => autosize(box, Math.max(r.height, 26)));
+  let done = false;
+  const finish = save => {
+    if (done) return; done = true;
+    if (save) {
+      setLabelText(l, box.value);
+      if (l.input) { l.input.value = l.text; autosize(l.input); }
+      updateFields(); persist();
+    }
+    box.remove();
+  };
+  // Enter saves; Shift+Enter starts a new line
+  box.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') finish(false); };
+  box.onblur = () => finish(true);
+  box.focus(); box.select();
+}
+
+function setLabelText(l, text) {
+  l.text = text;
+  if (l.icon) { const cap = l.el.querySelector('.cap'); cap.textContent = text; cap.style.display = text ? '' : 'none'; }
+  else l.el.textContent = text;
+}
+
+// Show a label's size (1 = 100%) in both the slider and the number box.
+function showOwnSize(v) {
+  $('own-size').value = Math.round(v * 100);
+  $('own-size-num').value = Math.round(v * 100);
+}
+
+// Per-label size multiplier (1 = normal size).
+function setLabelSize(l, v) {
+  l.size = v;
+  l.el.style.setProperty('--own', v);
+  if (selection?.item === l) showOwnSize(v);
+}
+
+function updateLegend() {
+  const used = Object.keys(CATS).filter(c => labels.some(l => l.icon && ICONS[l.icon].cat === c));
+  $('legend').innerHTML = used.map(c => `<span><i style="background:${CATS[c].color}"></i>${CATS[c].name}</span>`).join('');
+}
+
+// iconKey = null makes a plain text label; otherwise a coloured icon marker with an optional caption.
+function addLabel(level, text, position, iconKey = null) {
+  const anchor = new THREE.Object3D();
+  anchor.userData.anchor = true;
+  const n = labels.filter(l => l.level === level && l.icon).length;
+  anchor.position.copy(position || (iconKey
+    ? new V3(((n % 5) - 2) * 6, level.base.y + 2.5, Math.floor(n / 5) * 6)   // hover above the level, fanned out
+    : new V3(-level.base.x / 2 - 3, level.base.y / 2, 0)));
+  level.root.add(anchor);
+  const el = document.createElement('div');
+  el.className = iconKey ? (iconKey === 'pin' ? 'icon-marker pin' : 'icon-marker') : 'level-label';
+  if (iconKey) el.innerHTML = iconBadge(iconKey) + '<span class="cap"></span>';
+  $('labels').append(el);
+  const label = {text, level, anchor, el, visible: true, icon: iconKey, size: 1, blocks: []};
+  // pick a label straight from the map (Ctrl/Shift+click adds to the group); a text label with no linked block then asks for one
+  el.addEventListener('click', e => {
+    if (e.ctrlKey || e.shiftKey || e.metaKey) { toggleMulti(label); return; }
+    select('label', label);
+    if (!label.icon && !label.blocks.length && !label.pickDismissed) startPick(label);
+  });
+  el.addEventListener('dblclick', e => { e.preventDefault(); stopPick(); renameOnScreen(label); });   // double-click to rename in place
+  labels.push(label);
+  setLabelText(label, text);
+  updateLegend();
+  return label;
+}
+
+function removeLabel(label, refresh = true) {
+  if (!labels.includes(label)) return;
+  label.anchor.removeFromParent();
+  label.el.remove();
+  multi.delete(label);
+  labels.splice(labels.indexOf(label), 1);
+  if (picking === label) stopPick();
+  if (label.blocks.length) { label.blocks = []; updateBlockHighlight(); }   // give the blocks their colour back
+  updateLegend();
+  if (refresh) {
+    if (selection?.item === label) selection = null;
+    renderLists(); updateFields(); attachGizmo();
+    persist();
+  }
+}
+
+// ---------- selection & editor ----------
+function worldPos(s) {
+  if (s.kind === 'level') return s.item.root.position.clone();
+  s.item.level.root.updateMatrixWorld(true);
+  return s.item.anchor.getWorldPosition(new V3());
+}
+
+function setWorldPos(s, v) {
+  if (s.kind === 'level') s.item.root.position.copy(v);
+  else { s.item.level.root.updateMatrixWorld(true); s.item.anchor.position.copy(s.item.level.root.worldToLocal(v.clone())); }
+}
+
+// Extra labels selected together with the main one (Ctrl/Shift+click). Moving the main label moves them all by the same amount.
+const multi = new Set();let lastPos = null;
+
+function select(kind, item) {
+  multi.clear();
+  selection = {kind, item};
+  updateFields(); attachGizmo(); highlight();
+}
+
+// Ctrl/Shift+click: add or remove a label from the group that moves together.
+function toggleMulti(l) {
+  if (selection?.kind !== 'label') { select('label', l); return; }
+  if (l === selection.item) {
+    // dropping the main label: promote another one, or just clear if it was alone
+    const next = multi.values().next().value;
+    if (!next) { deselect(); return; }
+    multi.delete(next); selection = {kind: 'label', item: next};
+  } else if (multi.has(l)) multi.delete(l); else multi.add(l);
+  updateFields(); attachGizmo(); highlight();
+}
+
+// Select every label on a level.
+function selectLevelLabels(level) {
+  const group = labels.filter(l => l.level === level);
+  if (!group.length) return;
+  select('label', group[0]);
+  for (const l of group.slice(1)) multi.add(l);
+  updateFields(); highlight();
+}
+
+// Shift all the other selected labels by the same world-space amount the main one just moved.
+function moveGroup(delta) {
+  for (const l of multi) {
+    const s = {kind: 'label', item: l};
+    setWorldPos(s, worldPos(s).add(delta));
+  }
+}
+
+// Clear the selection: the position handles disappear and the editor greys out.
+function deselect() {
+  if (!selection) return;
+  multi.clear();
+  selection = null;
+  updateFields(); attachGizmo(); highlight();
+}
+
+// ---------- linked blocks ----------
+// A text label can be linked to one block (room) of its level. While the label is selected that block shows red;
+// it returns to its own colour as soon as the label is deselected. Blocks are found from the GLB's node names ("Room | floor", "Room | wall N", …).
+const RED = new THREE.MeshStandardMaterial({color: 0xe53935, roughness: .55, metalness: 0});
+const redMeshes = new Map();   // mesh -> its original material
+const rawName = o => o.userData?.name ?? o.name ?? '';
+const roomKey = o => rawName(o).split(/ \| |_\|_/)[0];
+const roomTitle = room => room.split(/ \| |_\|_/)[0].replace(/\s*\n\s*/g, ' ');
+
+// One block = the parts that share a room name AND touch each other. The GLB has a few parts named after one room but
+// sitting next to another (e.g. two "General Office" walls at the Bookshop), so same-named parts far away are a separate block.
+function blockCluster(level, start) {
+  level.root.updateMatrixWorld(true);
+  const key = roomKey(start), parts = [];
+  level.root.traverse(o => { if (o.isMesh && roomKey(o) === key) parts.push({o, box: new THREE.Box3().setFromObject(o).expandByScalar(.3)}); });
+  const first = parts.find(p => p.o === start);
+  if (!first) return [start];
+  const seen = new Set([first]), queue = [first];
+  for (const p of queue) for (const q of parts) if (!seen.has(q) && p.box.intersectsBox(q.box)) { seen.add(q); queue.push(q); }
+  return [...seen].map(p => p.o);
+}
+// A block is saved under a stable id: the name of its floor part (or its first part). Older saves hold just the room name; that still finds its floor.
+const blockId = cluster => { const names = cluster.map(rawName).sort(); return names.find(n => / \| floor$/.test(n)) || names[0]; };
+function findBlock(level, id) {
+  let start = null;
+  level.root.traverse(o => { if (!start && o.isMesh && rawName(o) === id) start = o; });
+  if (!start) level.root.traverse(o => { if (!start && o.isMesh && rawName(o) === `${id} | floor`) start = o; });
+  return start ? blockCluster(level, start) : [];
+}
+function updateBlockHighlight() {
+  const want = new Set();
+  if (selection?.kind === 'label') for (const l of [selection.item, ...multi]) for (const id of l.blocks) for (const m of findBlock(l.level, id)) want.add(m);
+  for (const [m, mat] of redMeshes) if (!want.has(m)) { m.material = mat; redMeshes.delete(m); }
+  for (const m of want) if (!redMeshes.has(m)) { redMeshes.set(m, m.material); m.material = RED; }
+}
+
+let picking = null, pickBanner = null;
+function startPick(label) {
+  if (label.icon) return;
+  picking = label;
+  pickBanner ||= Object.assign(document.createElement('div'), {id: 'pick-banner'});
+  pickBanner.textContent = `Tap each block that belongs to “${roomTitle(label.text) || 'this label'}” (tap again to remove) · Enter or Esc when done`;
+  document.body.append(pickBanner);
+  renderer.domElement.style.cursor = 'crosshair';
+  status('Click or tap every block that belongs to this label. They turn red while the label is selected.');
+}
+function stopPick() {
+  if (!picking) return;
+  picking.pickDismissed = true;   // don't ask again for this label until the page is reloaded; "Choose block" still works
+  picking = null; pickBanner?.remove();
+  renderer.domElement.style.cursor = '';
+}
+
+function highlight() {
+  if (picking && selection?.item !== picking) stopPick();
+  updateBlockHighlight();
+  for (const l of levels) l.btn?.classList.toggle('active', selection?.item === l);
+  for (const l of labels) { const on = selection?.item === l || multi.has(l); l.row?.classList.toggle('active', on); l.el.classList.toggle('sel', on); }
+  if (selection?.kind === 'label') selection.item.row?.scrollIntoView({block: 'nearest'});
+}
+
+function updateFields() {
+  const s = selection;
+  $('editor').disabled = !s;
+  if (!s) {
+    $('selected-title').textContent = 'Nothing selected';
+    for (const id of ['own-size-row', 'duplicate', 'rotation-row', 'block-row']) $(id).style.display = 'none';
+    for (const k of ['x', 'y', 'z']) $(k).value = '';
+    return;
+  }
+  const isLevel = s.kind === 'level', it = s.item;
+  $('selected-title').textContent = isLevel ? it.name : `${it.icon ? 'Icon' : 'Label'} · ${it.text.replace(/\s*\n\s*/g, ' ') || '(no caption)'}`;
+  const p = worldPos(s);
+  lastPos = p.clone();
+  if (multi.size) $('selected-title').textContent = `${multi.size + 1} labels selected · moving together`;
+  for (const k of ['x', 'y', 'z']) $(k).value = p[k].toFixed(2);
+  $('rotation-row').style.display = isLevel ? '' : 'none';
+  $('own-size-row').style.display = isLevel ? 'none' : '';
+  $('duplicate').style.display = isLevel ? 'none' : '';
+  $('block-row').style.display = !isLevel && !it.icon && !multi.size ? '' : 'none';
+  if (!isLevel) {
+    $('block-chips').replaceChildren(...(it.blocks.length ? it.blocks.map(room => {
+      const chip = document.createElement('span'); chip.className = 'chip'; chip.append(roomTitle(room));
+      const x = document.createElement('button'); x.textContent = '×'; x.title = 'Unlink this block'; x.setAttribute('aria-label', `Unlink ${roomTitle(room)}`);
+      x.onclick = () => { it.blocks = it.blocks.filter(r => r !== room); updateFields(); updateBlockHighlight(); persist(); };
+      chip.append(x); return chip;
+    }) : ['No block linked']));
+    $('block-pick').textContent = it.blocks.length ? 'Add / remove blocks' : 'Choose blocks';
+    $('block-clear').style.display = it.blocks.length ? '' : 'none';
+  }
+  if (!isLevel) showOwnSize(it.size);  if (isLevel) $('rotation').value = THREE.MathUtils.radToDeg(it.root.rotation.y).toFixed(1);
+  $('visible').checked = isLevel ? it.root.visible : it.visible;
+}
+
+function attachGizmo() {
+  const s = selection;
+  if (!s || !$('gizmo').checked) { handles.detach(); return; }
+  const visible = s.kind === 'level' ? s.item.root.visible : s.item.visible && s.item.level.root.visible;
+  if (visible) handles.attach(s.kind === 'level' ? s.item.root : s.item.anchor); else handles.detach();
+}
+
+let dragLabel = null;
+const clearDropMarks = () => document.querySelectorAll('.label-row').forEach(r => r.classList.remove('dragging', 'drop-above', 'drop-below'));
+
+// Move `src` next to `target` in the labels list (before or after it) and save the new order.
+function moveLabel(src, target, before) {
+  labels.splice(labels.indexOf(src), 1);
+  labels.splice(labels.indexOf(target) + (before ? 0 : 1), 0, src);
+  renderLists(); persist();
+}
+
+function refreshEyes() {
+  for (const l of levels) {
+    if (!l.eye) continue;
+    const on = l.root.visible;
+    l.eye.textContent = on ? '👁' : '🚫';
+    l.eye.classList.toggle('off', !on);
+    l.eye.title = on ? `Hide ${l.name} and all its labels` : `Show ${l.name} and all its labels`;
+    l.eye.setAttribute('aria-label', l.eye.title);
+    l.eye.setAttribute('aria-pressed', String(!on));
+  }
+}
+
+function renderLists() {
+  const levelList = $('levels');
+  levelList.replaceChildren(...levels.map(l => {
+    const b = document.createElement('button');
+    b.textContent = l.name; b.title = l.name; b.onclick = () => select('level', l);
+    l.btn = b;
+    // eye button: hide / show this level's 3D model together with all its labels and icons
+    const eye = document.createElement('button'); eye.className = 'eye';
+    eye.onclick = () => {
+      l.root.visible = !l.root.visible;
+      refreshEyes(); updateFields(); attachGizmo(); persist();
+    };
+    l.eye = eye;
+    const wrap = document.createElement('div'); wrap.className = 'lvl'; wrap.append(b, eye);
+    return wrap;
+  }));
+  refreshEyes();
+  if (!levels.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No levels yet. Click “+ Add GLB”.'; levelList.replaceChildren(p); }
+
+  const labelList = $('label-list');
+  const buildRow = l => {
+    const row = document.createElement('div'); row.className = 'label-row';
+    const input = document.createElement('textarea'); input.rows = 1; input.value = l.text; input.placeholder = l.icon ? 'Caption (optional)' : 'Label text'; input.setAttribute('aria-label', l.icon ? 'Icon caption' : 'Label text');
+    input.title = 'Shift+Enter for a new line';
+    requestAnimationFrame(() => autosize(input));
+    input.onfocus = () => { if (!multi.size || !multi.has(l)) select('label', l); };
+    input.onmousedown = e => { if (e.ctrlKey || e.shiftKey || e.metaKey) { e.preventDefault(); toggleMulti(l); } };
+    input.oninput = () => { setLabelText(l, input.value); autosize(input); updateFields(); persist(); };
+    const del = document.createElement('button'); del.textContent = '×'; del.title = 'Remove'; del.setAttribute('aria-label', 'Remove');
+    del.onclick = () => removeLabel(l);
+    // drag the grip to reorder; Alt+Up / Alt+Down in the text box also moves the label
+    const grip = document.createElement('span'); grip.className = 'grip'; grip.textContent = '⋮⋮'; grip.title = 'Drag to reorder';
+    grip.onmousedown = () => { row.draggable = true; };
+    row.ondragstart = e => { dragLabel = l; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', l.text); row.classList.add('dragging'); };
+    row.ondragend = () => { row.draggable = false; dragLabel = null; clearDropMarks(); };
+    row.ondragover = e => {
+      if (!dragLabel || dragLabel === l || dragLabel.level !== l.level) return;
+      e.preventDefault(); clearDropMarks();
+      const r = row.getBoundingClientRect();
+      row.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-above' : 'drop-below');
+    };
+    row.ondrop = e => {
+      e.preventDefault();
+      const r = row.getBoundingClientRect();
+      if (dragLabel && dragLabel !== l && dragLabel.level === l.level) moveLabel(dragLabel, l, e.clientY < r.top + r.height / 2);
+      dragLabel = null; clearDropMarks();
+    };
+    input.onkeydown = e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); input.blur(); return; }   // Shift+Enter adds a line
+      if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      e.preventDefault();
+      const group = labels.filter(x => x.level === l.level);
+      const i = group.indexOf(l), j = i + (e.key === 'ArrowUp' ? -1 : 1);
+      if (j >= 0 && j < group.length) { moveLabel(l, group[j], e.key === 'ArrowUp'); l.input.focus(); }
+    };
+    row.append(grip);
+    if (l.icon) row.insertAdjacentHTML('beforeend', iconBadge(l.icon));
+    row.append(input, del); l.row = row; l.input = input; return row;
+  };
+  // group the labels under a heading for each level
+  labelList.replaceChildren(...levels.flatMap(level => {
+    const group = labels.filter(l => l.level === level);
+    const head = document.createElement('div'); head.className = 'level-head';
+    head.textContent = `${level.name} (${group.length})`;
+    head.onclick = () => select('level', level);
+    if (group.length > 1) {
+      const all = document.createElement('button'); all.className = 'small'; all.textContent = 'Select all';
+      all.title = 'Select every label on this level so they move together';
+      all.onclick = e => { e.stopPropagation(); selectLevelLabels(level); };
+      head.append(all);
+    }
+    if (!group.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No labels on this level.'; return [head, p]; }
+    return [head, ...group.map(buildRow)];
+  }));
+  if (!labels.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No labels.'; labelList.replaceChildren(p); }
+  highlight();
+}
+
+// ---------- persistence ----------
+function state() {
+  return {
+    version: 2,
+    extras: levels.filter(l => l.url).map(l => ({id: l.id, name: l.name, url: l.url})),
+    levels: levels.filter(l => l.saved).map(l => ({id: l.id, offset: l.root.position.clone().sub(l.home).toArray(), rotation: l.root.rotation.y, visible: l.root.visible})),
+    labels: labels.filter(l => l.level.saved).map(l => ({text: l.text, levelId: l.level.id, position: l.anchor.position.toArray(), visible: l.visible, icon: l.icon, size: l.size, blocks: l.blocks.length ? l.blocks : undefined})),
+  };
+}
+
+// Layout is also written to layout.json by server.mjs (START.cmd). On a static host the PUT fails once and file saving stops.
+let fileSaving = true, fileTimer = 0, fileOk = false;
+function saveToFile() {
+  clearTimeout(fileTimer);
+  fileTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('layout.json', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(state(), null, 2)});
+      if (!r.ok) throw Error(r.status);
+      fileOk = true; $('saved').textContent = '✓ Changes saved to layout.json and this browser.';
+    } catch { fileSaving = false; fileOk = false; }
+  }, 400);
+}
+
+function persist() {
+  if (!ready) return;
+  try { localStorage.setItem(KEY, JSON.stringify(state())); $('saved').textContent = '✓ Changes saved in this browser.'; }
+  catch { $('saved').textContent = 'Use Save layout to keep your changes.'; }
+  if (fileSaving) saveToFile();
+}
+
+// GLBs added in the page are kept by server.mjs in models/uploads and listed under "extras" in the layout.
+const UPLOAD_URL = /^models\/uploads\/[\w\-. ]{1,100}\.glb$/i;
+
+async function loadExtras(data) {
+  validate(data);
+  for (const x of data.extras || []) {
+    if (levels.some(l => l.id === x.id)) continue;
+    try { const level = build(await serverLoader.loadAsync(`${x.url}?t=${Date.now()}`), x.id, x.name, true); level.url = x.url; }
+    catch (err) { console.error(err); status(`Could not load added model ${x.name}.`); }
+  }
+}
+
+function validate(d) {
+  const nums = (a, n) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && Math.abs(v) <= 10000);
+  if (d?.version !== 2 || !Array.isArray(d.levels)) throw Error('Choose a layout saved by this page.');
+  for (const l of d.levels) if (typeof l.id !== 'string' || !nums(l.offset, 3) || !Number.isFinite(l.rotation) || typeof l.visible !== 'boolean') throw Error('Layout contains invalid positions.');
+  if (d.extras !== undefined) {
+    if (!Array.isArray(d.extras)) throw Error('Layout contains invalid added models.');
+    for (const x of d.extras) if (typeof x.id !== 'string' || typeof x.name !== 'string' || !UPLOAD_URL.test(x.url)) throw Error('Layout contains invalid added models.');
+  }
+  if (d.labels !== undefined) {
+    if (!Array.isArray(d.labels)) throw Error('Layout contains invalid labels.');
+    for (const l of d.labels) if (typeof l.text !== 'string' || typeof l.levelId !== 'string' || !nums(l.position, 3) || (l.size !== undefined && !(Number.isFinite(l.size) && l.size >= .1 && l.size <= 10)) || (l.block !== undefined && (typeof l.block !== 'string' || l.block.length > 200)) || (l.blocks !== undefined && !(Array.isArray(l.blocks) && l.blocks.length <= 100 && l.blocks.every(b => typeof b === 'string' && b.length <= 200)))) throw Error('Layout contains invalid labels.');
+  }
+  return d;
+}
+
+function restore(data) {
+  validate(data);
+  for (const d of data.levels) {
+    const l = levels.find(v => v.id === d.id && v.saved);
+    if (!l) continue;
+    l.root.position.copy(l.home).add(new V3().fromArray(d.offset));
+    l.root.rotation.y = d.rotation; l.root.visible = d.visible;
+  }
+  if (data.labels) {
+    for (const l of labels.filter(l => l.level.saved)) removeLabel(l, false);
+    for (const d of data.labels) {
+      const level = levels.find(v => v.id === d.levelId && v.saved);
+      if (!level) continue;
+      const label = addLabel(level, d.text, new V3().fromArray(d.position), ICONS[d.icon] ? d.icon : null);
+      label.visible = d.visible !== false;
+      if (d.size !== undefined) setLabelSize(label, d.size);
+      // "block" (a single name) is the older format; "blocks" is the list
+      if (!label.icon) {
+        const ids = [...(typeof d.block === 'string' ? [d.block] : []), ...(d.blocks || [])];
+        label.blocks = [...new Set(ids.map(b => { const c = findBlock(level, b); return c.length ? blockId(c) : b; }))];   // older saves hold just a room name; convert to the block's id
+      }
+    }
+  }
+  selection = null;
+  updateBlockHighlight();
+  renderLists(); updateFields(); attachGizmo(); fit();
+}
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// ---------- loading ----------
+async function init() {
+  status('Loading levels…');
+  const results = await Promise.allSettled(DEFAULTS.map(d => serverLoader.loadAsync(`${d.url}?t=${Date.now()}`)));
+  const failed = [];
+  results.forEach((r, i) => {
+    const d = DEFAULTS[i];
+    if (r.status !== 'fulfilled') { failed.push(d.name); console.error(r.reason); return; }
+    try { addLabel(build(r.value, d.id, d.name, true), d.label); }
+    catch (err) { failed.push(`${d.name} (${err.message})`); }
+  });
+  ready = true;
+  renderLists();
+  // layout.json (saved by server.mjs / uploaded with the site) wins over this browser's copy
+  let fileLayout = null;
+  try { const r = await fetch(`layout.json?t=${Date.now()}`, {cache: 'no-store'}); if (r.ok) fileLayout = await r.json(); } catch {}
+  try {
+    const saved = fileLayout ? JSON.stringify(fileLayout) : localStorage.getItem(KEY);
+    if (saved) { const data = JSON.parse(saved); await loadExtras(data); restore(data); }
+  } catch { status('Saved layout could not be restored. Using the default.'); }
+  updateFields();   // nothing selected on load, so no position handles are shown
+  fit();
+  status(failed.length ? `Could not load: ${failed.join(', ')}. Start this project using START.cmd.` : `${levels.length} models loaded · Select a level to edit`);
+}
+
+// ---------- events ----------
+$('add-glb').onclick = () => $('glb-file').click();
+$('glb-file').onchange = async e => {
+  const files = [...e.target.files]; e.target.value = '';
+  let added = null;
+  for (const file of files) {
+    const url = URL.createObjectURL(file);
+    try {
+      const name = file.name.replace(/\.glb$/i, '');
+      const gltf = await fileLoader.loadAsync(url);
+      // Keep the file via server.mjs (models/uploads) so the level and its labels survive a refresh.
+      let id = `upload-${name.replace(/[^\w\-. ]/g, '_').slice(0, 80)}`, kept = false;
+      for (let n = 2; levels.some(l => l.id === id); n++) id = `upload-${name.replace(/[^\w\-. ]/g, '_').slice(0, 80)}-${n}`;
+      if (fileSaving) {
+        try { const r = await fetch(`models/uploads/${id.slice(7)}.glb`, {method: 'PUT', body: file}); kept = r.ok; } catch {}
+      }
+      const level = build(gltf, kept ? id : `file-${++counter}`, name, kept);
+      if (kept) level.url = `models/uploads/${id.slice(7)}.glb`;
+      addLabel(level, name); added = level;
+    } catch (err) { status(`Could not add ${file.name}: ${err.message}`); }
+    finally { URL.revokeObjectURL(url); }
+  }
+  if (added) { renderLists(); select('level', added); fit(); persist(); status(added.saved ? 'Added on top of the stack and saved to models/uploads.' : 'Added on top of the stack. It is not kept after a refresh — start with START.cmd to keep it, or put the file in the models folder.'); }
+};
+
+$('remove').onclick = () => {
+  const s = selection; if (!s) return;
+  if (s.kind === 'label') {
+    for (const l of [...multi, s.item]) removeLabel(l, false);
+    multi.clear(); selection = null;
+    renderLists(); updateFields(); attachGizmo(); persist();
+    return;
+  }
+  removeLevel(s.item);
+  selection = levels.length ? {kind: 'level', item: levels[0]} : null;
+  renderLists(); updateFields(); attachGizmo(); persist();
+  status('Removed from the view. The GLB file itself is unchanged.');
+};
+
+// Clicking anywhere outside a text field clears any accidental page-text highlight (e.g. after Ctrl+A).
+document.addEventListener('mousedown', e => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  getSelection()?.removeAllRanges();
+});
+
+// Delete key removes the selected label(s); ignored while typing in a field, and never removes a level.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Delete' || selection?.kind !== 'label') return;
+  const t = e.target;
+  if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+  e.preventDefault();
+  $('remove').click();
+});
+
+// Ctrl+C (Cmd+C on Mac) duplicates the selected label; normal copying still works inside text fields or with highlighted text.
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() !== 'c' || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.repeat || selection?.kind !== 'label') return;
+  const t = e.target;
+  if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || getSelection()?.toString()) return;
+  e.preventDefault();
+  $('duplicate').click();
+});
+
+// icon palette, grouped by category
+$('icon-palette').innerHTML = Object.entries(CATS).map(([cat, c]) =>
+  `<div class="cat-title"><i style="background:${c.color}"></i>${c.name.toUpperCase()}</div><div class="icon-grid">` +
+  Object.entries(ICONS).filter(([, i]) => i.cat === cat).map(([key, i]) =>
+    `<button class="icon-btn" data-icon="${key}" title="Add “${i.name}” icon" aria-label="Add ${i.name} icon">${iconBadge(key)}</button>`).join('') + '</div>').join('');
+$('icon-palette').onclick = e => {
+  const key = e.target.closest('.icon-btn')?.dataset.icon;
+  if (!key) return;
+  const level = selection ? (selection.kind === 'level' ? selection.item : selection.item.level) : levels[levels.length - 1];
+  if (!level) { status('Add a level first.'); return; }
+  const label = addLabel(level, ICONS[key].name, null, key);
+  renderLists(); select('label', label); persist();
+  status(`${ICONS[key].name} icon added above ${level.name}. Drag its handles or type X/Y/Z to place it.`);
+};
+
+// copy the selected label/icon (text, icon, size) to exactly the same X/Y/Z as the original
+$('duplicate').onclick = () => {
+  if (selection?.kind !== 'label') return;
+  const src = selection.item;
+  const copy = addLabel(src.level, src.text, src.anchor.position.clone(), src.icon);
+  copy.visible = src.visible; copy.blocks = [...src.blocks];
+  setLabelSize(copy, src.size);
+  renderLists(); select('label', copy); persist();
+  status('Label duplicated at the same X, Y and Z. Drag the copy or type new values to move it.');
+};
+
+$('add-label').onclick = () => {
+  const level = selection ? (selection.kind === 'level' ? selection.item : selection.item.level) : levels[levels.length - 1];
+  if (!level) { status('Add a level first.'); return; }
+  const label = addLabel(level, 'New label');
+  renderLists(); label.input.focus(); label.input.select(); persist();
+};
+
+for (const k of ['x', 'y', 'z']) $(k).addEventListener('change', () => {
+  if (!selection) return;
+  const v = Number($(k).value);
+  if (Number.isFinite(v) && Math.abs(v) <= 10000) {
+    const p = worldPos(selection), old = p.clone(); p[k] = v; setWorldPos(selection, p);
+    if (multi.size && selection.kind === 'label') moveGroup(p.sub(old));
+  }
+  updateFields(); persist();
+});
+$('rotation').onchange = () => {
+  if (selection?.kind !== 'level') return;
+  const v = Number($('rotation').value);
+  if (Number.isFinite(v) && Math.abs(v) <= 360) selection.item.root.rotation.y = THREE.MathUtils.degToRad(v);
+  updateFields(); persist();
+};
+$('visible').onchange = () => {
+  if (!selection) return;
+  if (selection.kind === 'level') selection.item.root.visible = $('visible').checked; else selection.item.visible = $('visible').checked;
+  refreshEyes(); attachGizmo(); persist();
+};
+$('gizmo').onchange = attachGizmo;
+// typing a percentage: applies live while the value is valid (10-1000), snaps back to the real size on leaving the box
+$('own-size-num').oninput = () => {
+  if (selection?.kind !== 'label') return;
+  const v = Number($('own-size-num').value);
+  if (Number.isFinite(v) && v >= 10 && v <= 1000) { for (const l of [selection.item, ...multi]) setLabelSize(l, v / 100); $('own-size').value = v; persist(); }
+};
+$('own-size-num').onchange = () => { if (selection?.kind === 'label') showOwnSize(selection.item.size); };
+$('own-size').oninput = () => {
+  if (selection?.kind !== 'label') return;
+  for (const l of [selection.item, ...multi]) setLabelSize(l, Number($('own-size').value) / 100);
+  persist();
+};$('fit').onclick = fit;
+
+$('save').onclick = () => { if (ready) download(new Blob([JSON.stringify(state(), null, 2)], {type: 'application/json'}), 'campus-layout.json'); };
+$('import').onclick = () => $('file').click();
+$('file').onchange = async e => {
+  const file = e.target.files[0]; e.target.value = '';
+  if (!file || !ready) return;
+  try { const data = JSON.parse(await file.text()); await loadExtras(data); restore(data); persist(); status('Layout opened.'); } catch (err) { status(err.message); }
+};
+
+// Enter finishes choosing blocks
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && picking && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { e.preventDefault(); stopPick(); status('Done choosing blocks.'); }
+});
+
+// Esc deselects too
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  if (picking) { stopPick(); return; }   // Esc while choosing a block only cancels the choice
+  deselect();
+});
+
+// click a level in the viewport to select it; click empty space to deselect
+const ray = new THREE.Raycaster();
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => { down = {x: e.clientX, y: e.clientY}; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!ready || handles.dragging || handles.axis || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera);
+  const hit = ray.intersectObjects(levels.filter(l => l.root.visible).map(l => l.root), true)[0];
+  let obj = hit?.object;
+  while (obj && !levels.some(l => l.root === obj)) obj = obj.parent;
+  const level = levels.find(l => l.root === obj);
+  if (picking) {   // choosing blocks for a label: each clicked block (all its floor and wall parts) is added; clicking a linked block again removes it
+    if (!hit) { stopPick(); return; }   // clicking empty space finishes
+    if (level !== picking.level) { status(`Pick a block on ${picking.level.name}.`); return; }
+    const room = roomKey(hit.object);
+    if (!room || /^Plane/.test(room)) { status('That is the base plate. Pick one of the blocks.'); return; }
+    const label = picking, id = blockId(blockCluster(level, hit.object));
+    const had = label.blocks.includes(id);
+    label.blocks = had ? label.blocks.filter(r => r !== id) : [...label.blocks, id];
+    updateFields(); updateBlockHighlight(); persist();
+    status(`${had ? 'Unlinked' : 'Linked'} “${roomTitle(room)}” ·${label.blocks.length} block${label.blocks.length === 1 ? '' : 's'} linked. Enter or Esc when done.`);
+    return;
+  }
+  if (!hit) { deselect(); return; }   // clicking empty space deselects
+  if (level) select('level', level);
+});
+
+$('block-pick').onclick = () => { if (selection?.kind === 'label') startPick(selection.item); };
+$('block-clear').onclick = () => {
+  if (selection?.kind !== 'label') return;
+  selection.item.blocks = []; selection.item.pickDismissed = true;
+  updateFields(); updateBlockHighlight(); persist();
+};
+
+let lastZoomText = '';
+function animate() {
+  requestAnimationFrame(animate);
+  orbit.update();
+  renderer.render(scene, camera);
+  const dist = camera.position.distanceTo(orbit.target);
+  const zoomText = `Zoom distance: <b>${dist.toFixed(1)}</b> units` + (fitDistance ? ` · ${(fitDistance / dist).toFixed(2)}× Fit view` : '');
+  if (zoomText !== lastZoomText) { $('zoom').innerHTML = zoomText; lastZoomText = zoomText; }
+  const p = new V3();
+  for (const l of labels) {
+    l.anchor.getWorldPosition(p).project(camera);
+    const show = l.visible && l.level.root.visible && p.z >= -1 && p.z <= 1;
+    l.el.style.display = show ? '' : 'none';   // '' keeps the stylesheet's layout (icon markers are flex columns)
+    l.el.style.left = `${(p.x * .5 + .5) * host.clientWidth}px`;
+    l.el.style.top = `${(-p.y * .5 + .5) * host.clientHeight}px`;
+  }
+}
+
+window.campus = {levels, labels, camera};
+resize();
+animate();
+init().catch(err => { status(`Could not load the models: ${err.message}. Start this project using START.cmd.`); console.error(err); });
+</script>
+</body>
+</html>
