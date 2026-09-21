@@ -770,6 +770,18 @@
           padding: 10px 22px;
           font-size: 13px;
         }
+        #tab-venue {
+          background: #176b65;
+          border-color: #176b65;
+          color: #fff;
+        }
+        /* the button steps aside while its slide-up menu is open; the menu then sits at the bottom edge */
+        .panel-tabs:has(#tab-venue.active) {
+          visibility: hidden;
+        }
+        #side:has(#panel-venue.open) {
+          bottom: env(safe-area-inset-bottom);
+        }
         #tab-venue::before {
           content: "";
           display: inline-block;
