@@ -489,6 +489,51 @@
         font-size: 13px;
         color: #283942;
       }
+      .field select[hidden] {
+        display: none;
+      }
+      .combo {
+        position: relative;
+        margin-top: 7px;
+      }
+      .combo input {
+        display: block;
+        width: 100%;
+        padding: 11px 32px 11px 10px;
+        border: 1px solid #dce3e6;
+        border-radius: 8px;
+        background: #fff
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23647780' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E")
+          no-repeat right 11px center;
+        font-size: 13px;
+        color: #283942;
+      }
+      .combo-list {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        z-index: 20;
+        max-height: 260px;
+        overflow: auto;
+        background: #fff;
+        border: 1px solid #dce2e5;
+        border-radius: 10px;
+        box-shadow: 0 12px 32px #0002;
+        padding: 5px;
+      }
+      .combo-list[hidden] {
+        display: none;
+      }
+      .combo-list .opt {
+        flex-wrap: wrap;
+      }
+      .combo-list .opt em {
+        flex-basis: 100%;
+        font-style: normal;
+        font-size: 11px;
+        color: #8b979e;
+      }
       .swap-row {
         display: flex;
         justify-content: flex-end;
@@ -884,7 +929,7 @@
           data-panel="venue"
           aria-pressed="true"
         >
-          Find venue
+          Get Directions
         </button>
       </nav>
     </header>
@@ -1030,7 +1075,7 @@
             Turn on Draw routes, show one level, then click along its corridors.
             Points snap to staircases and to earlier points; click a line to
             start a branch. Enter or Esc ends a line. Visitors use these routes
-            in “Find venue”.
+            in “Get Directions”.
           </p>
 
           <fieldset id="editor" disabled>
@@ -1149,19 +1194,14 @@
           <p class="footnote">Your original GLB files remain unchanged.</p>
         </aside>
         <aside id="panel-venue" class="side-panel open">
-          <button type="button" id="venue-close" aria-label="Close Find venue">
+          <button type="button" id="venue-close" aria-label="Close Get Directions">
             ×
           </button>
-          <div class="eyebrow">OPEN HOUSE</div>
-          <h1>Find venue.</h1>
-          <p class="intro">
-            Choose where you are and where you want to go. The fastest route is
-            drawn on the map, using the staircases when you need to change
-            level.
-          </p>
-          <label class="field"
-            >From (origin)<select id="route-from" aria-label="Origin"></select
-          ></label>
+          <div class="field">
+            <label for="route-from-q">From (origin)</label>
+            <div class="combo" data-for="route-from"></div>
+            <select id="route-from" aria-label="Origin" hidden></select>
+          </div>
           <div class="swap-row">
             <button
               type="button"
@@ -1172,12 +1212,11 @@
               ⇅ Swap
             </button>
           </div>
-          <label class="field" style="margin-top: 0"
-            >To (destination)<select
-              id="route-to"
-              aria-label="Destination"
-            ></select
-          ></label>
+          <div class="field" style="margin-top: 0">
+            <label for="route-to-q">To (destination)</label>
+            <div class="combo" data-for="route-to"></div>
+            <select id="route-to" aria-label="Destination" hidden></select>
+          </div>
           <p id="route-msg" class="route-msg" role="status"></p>
           <ol id="route-steps"></ol>
           <button type="button" id="route-clear-path" class="small" hidden>
@@ -3121,17 +3160,61 @@ const handles = new TransformControls(camera, renderer.domElement);
       let searchHits = [],
         searchActive = -1;
       const oneLine = (s) => s.replace(/\s*\n\s*/g, " ").trim();
+      // programmes and activities, each pointing at the map label of the venue to locate
+      const ACTIVITIES = `IP1 English Language & Literature - Mediated Learning Lab
+IP2 Mother Tongue Languages - HMTL Room
+IP3 Humanities - CO:LABs, 1, 2, 3
+IP4 Aesthetics - Library
+IP5 Makers - MakerXpace
+IP6 Mathematics - Smart Rooms
+IP7 Science - Smart Rooms
+CCA1 Debate - Outside L1 staffroom
+CCA 2 Media Club - Outside L1 staffroom
+CCA3 Art Club - Outside L1 staffroom
+CCA4 Badminton - Indoor Sports Hall
+CCA5 Cross Country - Indoor Sports Hall
+CCA6 Shooting - Indoor Sports Hall
+CCA7 Floorball - Indoor Sports Hall
+CCA8 Volleyball - Indoor Sports Hall
+CCA9 Rockclimbing - Bouldering Wall
+CCA10 Boys’ Brigade - School Canteen
+CCA11 Girls’ Brigade - School Canteen
+CCA12 St. John Brigade - School Canteen
+CCA13 National Cadet Corps - School Canteen
+CCA14 Chinese Dance - Reflections Theatre
+CCA15 Band - Reflections Theatre
+CCA16 Guzheng - Reflections Theatre
+CCA17 Choir - Reflections Theatre
+CCA18 Drama - Reflections Theatre
+TD1 Cognitive - School Hall
+TD2 Psychomotor - School Hall
+TD3 Community - School Hall
+TD4 Aesthetics - School Hall
+TD5 Leadership - School Hall
+G1 Info Booth - Foyer
+G2 First Aid - Foyer
+G3 Parent Support Group Booth - Foyer
+G4 Heritage Room - Heritage Room`
+        .split("\n")
+        .map((line) => {
+          const i = line.lastIndexOf(" - ");
+          return { text: line, venue: line.slice(i + 3).trim() };
+        });
+      // venue names as written above that differ from the label on the map
+      const VENUE_ALIAS = { "hmtl room": "higher mt room", library: "school library" };
+      const venueKey = (s) => {
+        const k = oneLine(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        return VENUE_ALIAS[k] || k;
+      };
       function renderSearch() {
         const q = oneLine(searchInput.value).toLowerCase();
-        searchHits = labels
+        const rooms = labels
           .filter(
             (l) =>
               !isHidden(l.level) &&
               !l.icon &&
               oneLine(l.text) &&
-              (!q ||
-                oneLine(l.text).toLowerCase().includes(q) ||
-                levelTitle(l.level).toLowerCase().includes(q)),
+              !/^level\b/i.test(oneLine(l.text)),
           )
           .sort((a, b) =>
             oneLine(a.text).localeCompare(oneLine(b.text), undefined, {
@@ -3139,22 +3222,35 @@ const handles = new TransformControls(camera, renderer.domElement);
               sensitivity: "base",
             }),
           );
+        const acts = ACTIVITIES.flatMap((a) => {
+          const label = rooms.find((l) => venueKey(l.text) === venueKey(a.venue));
+          return label ? [{ name: a.text, label }] : [];
+        });
+        searchHits = [
+          ...acts,
+          ...rooms.map((l) => ({ name: oneLine(l.text), label: l })),
+        ].filter(
+          (h) =>
+            !q ||
+            h.name.toLowerCase().includes(q) ||
+            levelTitle(h.label.level).toLowerCase().includes(q),
+        );
         searchActive = searchHits.length ? 0 : -1;
         searchList.replaceChildren(
           ...(searchHits.length
-            ? searchHits.map((l, i) => {
+            ? searchHits.map((h, i) => {
                 const row = document.createElement("div");
                 row.className = "opt";
                 row.setAttribute("role", "option");
                 row.id = `opt-${i}`;
                 const name = document.createElement("span");
-                name.textContent = oneLine(l.text);
+                name.textContent = h.name;
                 const where = document.createElement("small");
-                where.textContent = levelTitle(l.level);
+                where.textContent = levelTitle(h.label.level);
                 row.append(name, where);
                 row.onmousedown = (e) => {
                   e.preventDefault();
-                  goToLabel(l);
+                  goToLabel(h.label, h.name);
                 }; // mousedown, so the input doesn't lose focus first
                 row.onmousemove = () => setSearchActive(i);
                 return row;
@@ -3182,9 +3278,9 @@ const handles = new TransformControls(camera, renderer.domElement);
         searchInput.setAttribute("aria-expanded", "false");
       }
 
-      async function goToLabel(label) {
+      async function goToLabel(label, name) {
         closeSearch();
-        searchInput.value = oneLine(label.text);
+        searchInput.value = name || oneLine(label.text);
         searchInput.blur();
         if (!(await viewLevel(label.level)) || !label.level.root.visible)
           return;
@@ -3210,7 +3306,8 @@ const handles = new TransformControls(camera, renderer.domElement);
             );
         } else if (e.key === "Enter") {
           e.preventDefault();
-          if (searchHits[searchActive]) goToLabel(searchHits[searchActive]);
+          const h = searchHits[searchActive];
+          if (h) goToLabel(h.label, h.name);
         } else if (e.key === "Escape") {
           e.stopPropagation();
           closeSearch();
@@ -3273,6 +3370,52 @@ const handles = new TransformControls(camera, renderer.domElement);
         m.position.copy(p);
         m.scale.setScalar(r);
         return m;
+      }
+      // a round numbered marker that always faces the camera
+      function badge(parent, num, color, p) {
+        const c = document.createElement("canvas");
+        c.width = c.height = 128;
+        const g = c.getContext("2d");
+        g.beginPath();
+        g.arc(64, 64, 58, 0, Math.PI * 2);
+        g.fillStyle = color;
+        g.fill();
+        g.lineWidth = 8;
+        g.strokeStyle = "#fff";
+        g.stroke();
+        g.fillStyle = "#fff";
+        g.font = "bold 72px Inter, Arial, sans-serif";
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.fillText(String(num), 64, 68);
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        const s = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: tex,
+            depthTest: false,
+            depthWrite: false,
+            toneMapped: false,
+            sizeAttenuation: false, // fixed pixel size, like the map icons
+          }),
+        );
+        s.userData.route = true;
+        s.renderOrder = 1000;
+        s.raycast = () => {};
+        s.center.set(-0.6, -0.6); // sits up and to the right of the route point so the icon and its label don't cover it
+        s.position.copy(p);
+        parent.add(s);
+        badges.push(s);
+        return s;
+      }
+      const BADGE_PX = 30,
+        badges = [];
+      function sizeBadges() {
+        const h = renderer.domElement.clientHeight || 1,
+          k = (BADGE_PX * 2) / (h * camera.projectionMatrix.elements[5]);
+        for (let i = badges.length; i--; )
+          if (!badges[i].parent) badges.splice(i, 1);
+          else badges[i].scale.setScalar(k);
       }
       function group(level, key) {
         if (!level[key]) {
@@ -3917,17 +4060,23 @@ const handles = new TransformControls(camera, renderer.domElement);
         }
         const first = res.segs[0],
           lastSeg = res.segs[res.segs.length - 1];
-        ball(
-          group(first.level, "pathGroup"),
-          MAT.start,
-          first.pts[0],
-          R_PATH * 2.2,
-        );
-        const endBall = ball(
+        // numbered badges matching the step list: 1 = start, then each staircase, last = arrival
+        badge(group(first.level, "pathGroup"), 1, "#e11d1d", first.pts[0]);
+        res.segs.forEach((s, i) => {
+          if (s === lastSeg) return;
+          s.badge = badge(
+            group(s.level, "pathGroup"),
+            i + 2,
+            "#e11d1d",
+            s.pts[s.pts.length - 1],
+          );
+          s.badge.visible = false;
+        });
+        const endBall = badge(
           group(lastSeg.level, "pathGroup"),
-          MAT.end,
+          res.segs.length + 1,
+          "#e11d1d",
           lastSeg.pts[lastSeg.pts.length - 1],
-          R_PATH * 2.6,
         );
         endBall.visible = false;
         $("route-clear-path").hidden = false;
@@ -3951,6 +4100,7 @@ const handles = new TransformControls(camera, renderer.domElement);
           await tween(Math.min(2400, 500 + s.total * 30), (k) => reveal(s, k));
           if (my !== routeToken) return;
           reveal(s, 1);
+          if (s.badge) s.badge.visible = true;
           if (s !== lastSeg) await sleep(500);
           if (my !== routeToken) return;
         }
@@ -3990,25 +4140,199 @@ const handles = new TransformControls(camera, renderer.domElement);
             keep = sel.value;
           sel.replaceChildren(
             new Option(ph, ""),
-            ...venues.map(
-              (v) =>
-                new Option(
-                  `${v.name} · ${[...new Set(v.labels.map((l) => levelTitle(l.level)))].join(", ")}`,
-                  v.name,
-                ),
-            ),
+            ...entries().map((e) => new Option(e.display, e.value)),
           );
-          sel.value = venues.some((v) => v.name === keep) ? keep : "";
+          sel.value = entryOf(keep) ? keep : "";
         }
+        syncCombos();
       }
+      // everything that can be picked as an origin / destination: programmes & activities (which point at a venue), then the venues themselves
+      function entries() {
+        const level = (v) =>
+          [...new Set(v.labels.map((l) => levelTitle(l.level)))].join(", ");
+        const acts = ACTIVITIES.flatMap((a) => {
+          const v = venues.find((x) => venueKey(x.name) === venueKey(a.venue));
+          return v
+            ? [{ value: a.text, name: a.text, v, display: `${a.text} · ${level(v)}`, lvl: level(v) }]
+            : [];
+        });
+        return [
+          ...acts,
+          ...venues.map((v) => ({
+            value: v.name,
+            name: v.name,
+            v,
+            display: `${v.name} · ${level(v)}`,
+            lvl: level(v),
+          })),
+        ];
+      }
+      const entryOf = (value) => value && entries().find((e) => e.value === value);
+      const venueFor = (value) => entryOf(value)?.v;
+      // origin / destination: a type-to-search box in front of each (hidden) select, which still holds the chosen venue
+      const venueLabel = (v) =>
+        `${v.name} · ${[...new Set(v.labels.map((l) => levelTitle(l.level)))].join(", ")}`;
+      const norm = (s) => oneLine(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const editDist = (a, b) => {
+        let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+        for (let i = 1; i <= a.length; i++) {
+          const cur = [i];
+          for (let j = 1; j <= b.length; j++)
+            cur[j] = Math.min(
+              prev[j] + 1,
+              cur[j - 1] + 1,
+              prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
+            );
+          prev = cur;
+        }
+        return prev[b.length];
+      };
+      // typo-tolerant: every typed word is close to the start of some word in the text
+      const looseMatch = (words, text) =>
+        words.every(
+          (w) =>
+            w.length >= 4 &&
+            text
+              .split(" ")
+              .some(
+                (u) =>
+                  editDist(w, u.slice(0, w.length)) <= Math.floor(w.length / 3),
+              ),
+        );
+      // rank entries for a typed query: name starts with it, contains it, matches the level, then loose (typo-tolerant) matches
+      function rankEntries(q) {
+        q = norm(q);
+        const all = entries();
+        if (!q) return all;
+        const words = q.split(" ");
+        const out = [];
+        all.forEach((e, i) => {
+          const name = norm(e.name),
+            lvl = norm(e.display);
+          let score = null;
+          if (name.startsWith(q)) score = 0;
+          else if (words.every((w) => name.includes(w))) score = 1;
+          else if (words.every((w) => lvl.includes(w))) score = 2;
+          else if (looseMatch(words, name)) score = 4;
+          if (score !== null) out.push({ e, score, i });
+        });
+        return out.sort((a, b) => a.score - b.score || a.i - b.i).map((x) => x.e);
+      }
+      const combos = [];
+      function setupCombo(box) {
+        const sel = $(box.dataset.for),
+          input = document.createElement("input"),
+          list = document.createElement("div");
+        input.id = sel.id + "-q";
+        input.type = "text";
+        input.autocomplete = "off";
+        input.setAttribute("role", "combobox");
+        input.setAttribute("aria-label", sel.getAttribute("aria-label"));
+        input.setAttribute("aria-expanded", "false");
+        list.className = "combo-list";
+        list.setAttribute("role", "listbox");
+        list.hidden = true;
+        box.append(input, list);
+        let hits = [],
+          active = -1;
+        const sync = () => {
+          input.value = entryOf(sel.value)?.display || "";
+          input.placeholder = sel.options[0]?.textContent || "";
+        };
+        const close = () => {
+          list.hidden = true;
+          input.setAttribute("aria-expanded", "false");
+        };
+        const setActive = (i) => {
+          active = i;
+          [...list.children].forEach((r, n) => {
+            r.classList.toggle("active", n === i);
+            if (n === i) r.scrollIntoView({ block: "nearest" });
+          });
+        };
+        const pick = (e) => {
+          sel.value = e.value;
+          sync();
+          close();
+          input.blur();
+          sel.dispatchEvent(new Event("change"));
+        };
+        const render = (filter) => {
+          hits = rankEntries(filter ? input.value : "");
+          list.replaceChildren(
+            ...(hits.length
+              ? hits.map((h) => {
+                  const row = document.createElement("div");
+                  row.className = "opt";
+                  row.setAttribute("role", "option");
+                  const name = document.createElement("span");
+                  name.textContent = h.name;
+                  const where = document.createElement("small");
+                  where.textContent = h.lvl;
+                  row.append(name, where);
+                  row.onmousedown = (e) => {
+                    e.preventDefault();
+                    pick(h);
+                  };
+                  row.onmousemove = () => setActive(hits.indexOf(h));
+                  return row;
+                })
+              : [
+                  Object.assign(document.createElement("div"), {
+                    className: "search-empty",
+                    textContent: "No matching venue",
+                  }),
+                ]),
+          );
+          list.hidden = false;
+          input.setAttribute("aria-expanded", "true");
+          setActive(hits.length ? 0 : -1);
+        };
+        input.addEventListener("focus", () => {
+          input.select();
+          render(false);
+        });
+        input.addEventListener("input", () => render(true));
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            if (list.hidden) render(false);
+            if (hits.length)
+              setActive(
+                (active + (e.key === "ArrowDown" ? 1 : -1) + hits.length) %
+                  hits.length,
+              );
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (hits[active]) pick(hits[active]);
+          } else if (e.key === "Escape") {
+            e.stopPropagation();
+            sync();
+            close();
+            input.blur();
+          }
+        });
+        input.addEventListener("blur", () => {
+          close();
+          if (!input.value.trim() && sel.value) {
+            sel.value = ""; // cleared the box: clear the choice too
+            sel.dispatchEvent(new Event("change"));
+          }
+          sync();
+        });
+        combos.push(sync);
+      }
+      document.querySelectorAll(".combo").forEach(setupCombo);
+      const syncCombos = () => combos.forEach((f) => f());
       function routeMsg(text, err) {
         const m = $("route-msg");
         m.textContent = text;
         m.classList.toggle("err", !!err);
       }
       async function runRoute() {
-        const from = venues.find((v) => v.name === $("route-from").value),
-          to = venues.find((v) => v.name === $("route-to").value);
+        const from = venueFor($("route-from").value),
+          to = venueFor($("route-to").value);
+        syncCombos();
         clearPath();
         $("route-steps").replaceChildren();
         if (!from || !to) {
@@ -4050,6 +4374,7 @@ const handles = new TransformControls(camera, renderer.domElement);
         $("route-steps").replaceChildren();
         routeMsg("");
         $("route-from").value = $("route-to").value = "";
+        syncCombos();
         deselect();
       };
 
@@ -4057,6 +4382,7 @@ const handles = new TransformControls(camera, renderer.domElement);
         requestAnimationFrame(animate);
         tickTweens();
         orbit.update();
+        sizeBadges();
         renderer.render(scene, camera);
         const dist = camera.position.distanceTo(orbit.target);
         const zoomText =
