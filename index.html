@@ -257,6 +257,7 @@ document.querySelectorAll('.panel-tabs button').forEach(btn => btn.addEventListe
   };
   document.getElementById('venue-close').addEventListener('click', () => setVenue(false));
   mq.addEventListener('change', e => setVenue(!e.matches));
+  window.addEventListener('route-found', () => { if (mq.matches) setVenue(false); });
   if (mq.matches) setVenue(false);
 }
 </script>
@@ -265,6 +266,10 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {TransformControls} from 'three/addons/controls/TransformControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
+// Levels kept in the layout but not offered to visitors (no tab, search hit or venue). Remove an id from this list to bring the level back.
+const HIDDEN_LEVELS = new Set(['upload-level-5', 'upload-level-6']);
+const isHidden = l => HIDDEN_LEVELS.has(l.id);
 
 // The levels that load automatically from the models folder, stacked in this order (bottom to top).
 const DEFAULTS = [
@@ -313,6 +318,28 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
 orbit.maxPolarAngle = Math.PI * .495;
 orbit.maxDistance = Infinity;   // no limit on zooming out
+// Touch screens: one finger orbits, pinching zooms (fingers apart = closer), and twisting two fingers turns the map about its vertical axis.
+orbit.touches = {ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN};
+{
+  const el = renderer.domElement, fingers = new Map(), UP = new V3(0, 1, 0);
+  let lastAngle = null;
+  const angle = () => { const [a, b] = [...fingers.values()]; return Math.atan2(b.y - a.y, b.x - a.x); };
+  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, {x: e.clientX, y: e.clientY}); lastAngle = fingers.size === 2 ? angle() : null; });
+  el.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'touch' || !fingers.has(e.pointerId)) return;
+    fingers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (fingers.size !== 2) return;
+    const now = angle();
+    if (lastAngle !== null) {
+      let d = now - lastAngle; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
+      const off = camera.position.clone().sub(orbit.target).applyAxisAngle(UP, d);   // camera goes round the other way, so the map turns with the fingers
+      camera.position.copy(orbit.target).add(off); userMoved = true; orbit.update();
+    }
+    lastAngle = now;
+  });
+  const lift = e => { if (e.pointerType !== 'touch') return; fingers.delete(e.pointerId); lastAngle = null; };
+  el.addEventListener('pointerup', lift); el.addEventListener('pointercancel', lift);
+}
 const handles = new TransformControls(camera, renderer.domElement);
 handles.setMode('translate');
 handles.setSize(.75);
@@ -398,9 +425,7 @@ function fit() {
     }
     return {dir: d, needed, extraTurn};
   };
-  let best = framing(0);
-  if (ins) for (const t of [90, -90]) { const f = framing(t); if (f.needed < best.needed * .92) best = f; }   // a tall phone screen: turn the map a quarter if that lets it fill more of the screen
-  framing(best.extraTurn); const dir = best.dir;   // leave the camera set up for the chosen turn
+  const best = framing(0), dir = best.dir;   // same viewing angle as the desktop, just zoomed out until the whole level fits
   const distance = best.needed * (ins ? 1.16 : 1.2) * (view.fitScale ?? 1);
   fitDistance = Math.min(Math.max(distance, 10), orbit.maxDistance);
   const opening = !userMoved && shown === 1 && !ins;   // the opening view of a single level is view.zoom times closer than the fit distance, and moved by view.shift
@@ -736,7 +761,7 @@ const levelTitle = l => /^level[\s_-]*\d+$/i.test(l.name) ? `Level ${levelNumber
 function renderTabs() {
   const tabs = $('level-tabs');
   if (levels.length < 2) { tabs.replaceChildren(); return; }
-  tabs.replaceChildren(...[...levels].sort((a, b) => levelNumber(a) - levelNumber(b)).map(l => {
+  tabs.replaceChildren(...levels.filter(l => !isHidden(l)).sort((a, b) => levelNumber(a) - levelNumber(b)).map(l => {
     const b = document.createElement('button');
     b.textContent = levelTitle(l);
     b.onclick = () => viewLevel(l);
@@ -1224,7 +1249,7 @@ let searchHits = [], searchActive = -1;
 const oneLine = s => s.replace(/\s*\n\s*/g, ' ').trim();
 function renderSearch() {
   const q = oneLine(searchInput.value).toLowerCase();
-  searchHits = labels.filter(l => !l.icon && oneLine(l.text) && (!q || oneLine(l.text).toLowerCase().includes(q) || levelTitle(l.level).toLowerCase().includes(q)))
+  searchHits = labels.filter(l => !isHidden(l.level) && !l.icon && oneLine(l.text) && (!q || oneLine(l.text).toLowerCase().includes(q) || levelTitle(l.level).toLowerCase().includes(q)))
     .sort((a, b) => oneLine(a.text).localeCompare(oneLine(b.text), undefined, {numeric: true, sensitivity: 'base'}));
   searchActive = searchHits.length ? 0 : -1;
   searchList.replaceChildren(...(searchHits.length ? searchHits.map((l, i) => {
@@ -1630,7 +1655,7 @@ let venues = [], venueSig = '';
 function refreshVenues() {
   const map = new Map();
   for (const l of labels) {
-    if (l.icon) continue;
+    if (l.icon || isHidden(l.level)) continue;
     const name = oneLine(l.text);
     if (!name || /^level\b/i.test(name)) continue;   // levels are not venues
     if (!map.has(name)) map.set(name, {name, labels: []});
@@ -1657,6 +1682,7 @@ async function runRoute() {
   if (res.error) { routeMsg(res.error, true); return; }
   routeMsg(res.segs.length > 1 ? `Route found across ${res.segs.length} levels.` : 'Route found.');
   $('route-steps').replaceChildren(...res.steps.map(t => Object.assign(document.createElement('li'), {textContent: t})));
+  window.dispatchEvent(new Event('route-found'));   // on a phone this slides the Find venue menu away so the route can be seen
   await playRoute(res);
 }
 $('route-from').onchange = $('route-to').onchange = runRoute;
