@@ -4663,9 +4663,12 @@ G4 Heritage Room - Heritage Room`
         const c = root.localToWorld(box.getCenter(new V3()));
         const t0 = orbit.target.clone(),
           p0 = camera.position.clone(),
-          off = p0.clone().sub(t0).multiplyScalar(scale),
+          dir = p0.clone().sub(t0).normalize(),
+          dist = stepDist ?? p0.distanceTo(t0) * scale, // the first step sets the zoom; later steps keep it
+          off = dir.multiplyScalar(dist),
           t1 = c.clone(),
           p1 = c.clone().add(off);
+        stepDist = dist;
         const my = ++zoomToken;
         userMoved = true; // keeps the zoom when the sheet is resized
         tween(550, (k) => {
@@ -4675,7 +4678,11 @@ G4 Heritage Room - Heritage Room`
           camera.position.lerpVectors(p0, p1, e);
         });
       }
-      let zoomToken = 0;
+      let zoomToken = 0,
+        stepDist = null; // camera distance of the step zoom, kept between steps until the visitor zooms on their own
+      orbit.addEventListener("end", () => {
+        if (sheetRes) stepDist = camera.position.distanceTo(orbit.target);
+      });
       function showOverview() {
         stepSel = -1;
         zoomToken++;
@@ -4685,6 +4692,7 @@ G4 Heritage Room - Heritage Room`
       function enterSheet(res) {
         sheetRes = res;
         stepSel = -1;
+        stepDist = null;
         if (!sheetPrevVis) sheetPrevVis = levels.filter((l) => l.root.visible);
         $("sheet-summary").textContent = `${res.from} → ${res.to}`;
         $("sheet-sub").textContent =
