@@ -4366,6 +4366,12 @@ G4 Heritage Room - Heritage Room`
             Object.assign(document.createElement("li"), { textContent: t }),
           ),
         );
+        if (matchMedia("(max-width:800px)").matches) {
+          // phone: let the chosen places show for half a second before the menu slides away and the route is drawn
+          const mine = routeToken;
+          await sleep(500);
+          if (mine !== routeToken) return; // the choice changed meanwhile
+        }
         window.dispatchEvent(new Event("route-found")); // on a phone this slides the Find venue menu away so the route can be seen
         await playRoute(res);
       }
