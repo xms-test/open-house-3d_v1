@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Open House 2026 directory</title>
 <link rel="stylesheet" href="style.css">
 <style>
@@ -129,6 +129,10 @@ body.route-draw #labels>*{pointer-events:none!important}
   #panel-venue h1{font-size:20px;margin:6px 0 5px}
   #venue-close{display:block;position:absolute;top:10px;right:12px;width:34px;height:34px;padding:0;border-radius:50%;font-size:22px;line-height:1;text-align:center;background:#f1f4f5;border-color:#f1f4f5}
 }
+/* deploy only */
+.icon-marker .cap{display:none!important}
+.icon-marker{pointer-events:none!important}
+#viewport,#viewport *{touch-action:none}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
 </head>
@@ -318,26 +322,37 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
 orbit.maxPolarAngle = Math.PI * .495;
 orbit.maxDistance = Infinity;   // no limit on zooming out
-// Touch screens: one finger orbits, pinching zooms (fingers apart = closer), and twisting two fingers turns the map about its vertical axis.
-orbit.touches = {ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN};
+// Touch screens (deployed page): one finger orbits the map. Two fingers: pinch to zoom (fingers apart = closer, together = further),
+// twist to turn the map, and drag together to slide it. Handled here so the gestures work the same on every phone.
+orbit.touches = {ONE: THREE.TOUCH.ROTATE, TWO: -1};
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault());   // iOS Safari page-zoom
 {
   const el = renderer.domElement, fingers = new Map(), UP = new V3(0, 1, 0);
-  let lastAngle = null;
-  const angle = () => { const [a, b] = [...fingers.values()]; return Math.atan2(b.y - a.y, b.x - a.x); };
-  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, {x: e.clientX, y: e.clientY}); lastAngle = fingers.size === 2 ? angle() : null; });
+  let last = null;
+  const pair = () => {
+    const [a, b] = [...fingers.values()];
+    return {ang: Math.atan2(b.y - a.y, b.x - a.x), dist: Math.hypot(b.x - a.x, b.y - a.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2};
+  };
+  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, {x: e.clientX, y: e.clientY}); last = fingers.size === 2 ? pair() : null; });
   el.addEventListener('pointermove', e => {
     if (e.pointerType !== 'touch' || !fingers.has(e.pointerId)) return;
     fingers.set(e.pointerId, {x: e.clientX, y: e.clientY});
     if (fingers.size !== 2) return;
-    const now = angle();
-    if (lastAngle !== null) {
-      let d = now - lastAngle; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
-      const off = camera.position.clone().sub(orbit.target).applyAxisAngle(UP, d);   // camera goes round the other way, so the map turns with the fingers
-      camera.position.copy(orbit.target).add(off); userMoved = true; orbit.update();
+    const now = pair();
+    if (last && last.dist > 0 && now.dist > 0) {
+      let d = now.ang - last.ang; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
+      const off = camera.position.clone().sub(orbit.target).applyAxisAngle(UP, d);   // twist: the camera goes round the other way, so the map turns with the fingers
+      const len = THREE.MathUtils.clamp(off.length() * last.dist / now.dist, 5, 5000);   // pinch: fingers apart = closer
+      off.setLength(len);
+      const k = 2 * len * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / el.clientHeight;   // slide: world units per screen pixel
+      const right = new V3().setFromMatrixColumn(camera.matrixWorld, 0), up = new V3().setFromMatrixColumn(camera.matrixWorld, 1);
+      const pan = right.multiplyScalar(-(now.mx - last.mx) * k).add(up.multiplyScalar((now.my - last.my) * k));
+      orbit.target.add(pan); camera.position.copy(orbit.target).add(off);
+      userMoved = true; orbit.update();
     }
-    lastAngle = now;
+    last = now;
   });
-  const lift = e => { if (e.pointerType !== 'touch') return; fingers.delete(e.pointerId); lastAngle = null; };
+  const lift = e => { if (e.pointerType !== 'touch') return; fingers.delete(e.pointerId); last = null; };
   el.addEventListener('pointerup', lift); el.addEventListener('pointercancel', lift);
 }
 const handles = new TransformControls(camera, renderer.domElement);
