@@ -779,9 +779,6 @@
         .panel-tabs:has(#tab-venue.active) {
           visibility: hidden;
         }
-        #side:has(#panel-venue.open) {
-          bottom: env(safe-area-inset-bottom);
-        }
         #tab-venue::before {
           content: "";
           display: inline-block;
@@ -798,21 +795,22 @@
         /* Find venue slides up from the bottom bar and stays until the x is tapped */
         #side {
           position: fixed;
-          left: 0;
-          right: 0;
-          bottom: calc(56px + env(safe-area-inset-bottom));
+          left: 12px;
+          right: 12px;
+          top: 50%;
+          bottom: auto;
           z-index: 40;
           overflow: visible;
           border: 0;
           background: none;
-          transform: translateY(calc(100% + 70px));
+          transform: translateY(100vh);
           visibility: hidden;
           transition:
             transform 0.3s ease,
             visibility 0s 0.3s;
         }
         #side:has(#panel-venue.open) {
-          transform: none;
+          transform: translateY(-50%);
           visibility: visible;
           transition:
             transform 0.3s ease,
@@ -828,8 +826,8 @@
           max-height: 55vh;
           max-height: 55dvh;
           overflow: auto;
-          border-radius: 18px 18px 0 0;
-          box-shadow: 0 -4px 20px #0003;
+          border-radius: 18px;
+          box-shadow: 0 8px 32px #0004;
           padding: 20px 20px 24px;
         }
         #side .side-panel.open {
