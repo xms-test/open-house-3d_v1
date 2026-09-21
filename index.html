@@ -1,0 +1,1729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open House 2026 directory</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.item-list{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
+.lvl{display:flex;gap:3px;min-width:0}
+.lvl>button:first-child{flex:1;min-width:0}
+.item-list .eye{flex:none;padding:0 6px;font-size:13px;line-height:1}
+.item-list .eye.off{opacity:.6;background:#f3f5f6}
+.item-list button{padding:11px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-list button.active{border-color:#247d72;color:#176b65;background:#edf7f3;font-weight:bold}
+.small{padding:6px 10px;font-size:11px}
+.danger{color:#a33232}
+.empty{font-size:11px;color:#8b979e;margin:0 0 8px}
+.label-row{display:flex;gap:6px;margin-bottom:6px}
+.label-row input,.label-row textarea{flex:1;min-width:0;padding:9px;border:1px solid #dce3e6;border-radius:7px;font-size:12px;line-height:1.3;font-family:inherit;background:#fff;resize:none;overflow:hidden;display:block}
+.label-row.active input,.label-row.active textarea{border-color:#247d72;background:#edf7f3}
+.label-row button{padding:6px 10px}
+.ic{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;border:2px solid #fff;box-shadow:0 2px 6px #0000003a}
+.ic svg{width:22px;height:22px;fill:#fff}
+.ic svg .s{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.icon-marker{position:absolute;pointer-events:none;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px}
+.icon-marker .cap{font-size:11px;font-weight:700;color:#273b43;background:#ffffffe8;padding:2px 6px;border-radius:6px;white-space:pre;text-align:center}
+.grip{cursor:grab;color:#9aa7ad;align-self:center;padding:0 2px;user-select:none;font-size:14px;letter-spacing:-3px;flex:none}
+.grip:hover{color:#247d72}
+.level-head{font-size:11px;font-weight:700;letter-spacing:.4px;color:#176b65;background:#edf7f3;border-radius:7px;padding:6px 9px;margin:12px 0 6px;cursor:pointer}
+.ic.bare{width:auto;height:auto;background:none;border:0;box-shadow:none}
+.ic.bare svg{width:32px;height:32px;filter:drop-shadow(0 2px 2px #0004)}
+.label-row .ic.bare svg{width:26px;height:26px}
+.icon-marker.pin{transform:translate(-50%,-100%) scale(var(--own,1));transform-origin:50% 100%;flex-direction:column-reverse}
+#labels,#zoom,#status,.level-head{user-select:none;-webkit-user-select:none}
+.level-head:first-child{margin-top:0}
+.level-head{display:flex;align-items:center;justify-content:space-between}
+.level-head button{padding:3px 8px;font-size:10px}
+.block-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0;font-size:12px}
+#block-chips{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:5px;color:#556b73}
+#block-chips .chip{display:inline-flex;align-items:center;gap:4px;background:#fdecea;color:#b71c1c;border-radius:999px;padding:2px 4px 2px 9px;max-width:100%}
+#block-chips .chip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 5px;font-size:14px;line-height:1}
+#pick-banner{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:30;background:#c62828;color:#fff;font:600 13px/1.3 sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 4px 14px #0004;pointer-events:none;max-width:90vw;text-align:center}
+.label-row.dragging{opacity:.4}
+.label-row.drop-above{box-shadow:0 -2px 0 #247d72}
+.label-row.drop-below{box-shadow:0 2px 0 #247d72}
+.label-row .ic{flex:none;width:30px;height:30px;border-radius:7px;align-self:center}
+.label-row .ic svg{width:18px;height:18px}
+.cat-title{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.6px;color:#647780;margin:12px 0 6px;font-weight:700}
+.cat-title i{width:8px;height:8px;border-radius:50%}
+.icon-grid{display:flex;flex-wrap:wrap;gap:6px}
+.icon-btn{padding:3px;border-radius:11px;line-height:0}
+.level-label{transform:translate(-100%,-50%) scale(var(--own,1));transform-origin:100% 50%;pointer-events:auto;cursor:pointer;padding:2px 5px;border-radius:6px;white-space:pre;text-align:center}
+.icon-marker{transform:translate(-50%,-50%) scale(var(--own,1));transform-origin:50% 50%;pointer-events:auto;cursor:pointer;padding:3px;border-radius:10px}
+.level-label.sel,.icon-marker.sel{outline:2px solid #247d72;outline-offset:1px;background:#ffffffb0}
+#zoom{position:absolute;top:24px;right:24px;z-index:2;font-size:11px;color:#455a64;background:#ffffffe8;border:1px solid #e1e7ea;border-radius:8px;padding:7px 11px;pointer-events:none;font-variant-numeric:tabular-nums}
+#zoom b{color:#176b65}
+#reset-view{position:absolute;top:66px;right:24px;z-index:2;padding:8px 12px;font-size:11px;background:#ffffffec}
+header{position:relative;z-index:60}
+.search{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,40vw);min-width:0}   /* centred at the top of the page */
+.search input{width:100%;padding:11px 16px 11px 42px;border:1px solid #dce2e5;border-radius:999px;font-size:13px;color:#202c36;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23819097' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 15px center}
+.search input::placeholder{color:#8b979e}
+#search-list{position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:min(60vh,420px);overflow:auto;background:#fff;border:1px solid #dce2e5;border-radius:14px;box-shadow:0 12px 32px #0002;padding:6px}
+#search-list[hidden]{display:none}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:13px;cursor:pointer}
+.opt.active{background:#edf7f3}
+.opt small{flex:none;font-size:11px;color:#176b65;background:#e8f4f1;border-radius:999px;padding:2px 9px}
+.search-empty{padding:12px;font-size:12px;color:#8b979e}
+@media(max-width:1100px){.search{position:relative;left:auto;top:auto;transform:none;width:auto;flex:1;max-width:560px;margin:0 14px}}   /* not enough room to centre it beside the title */
+#level-tabs{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:6px;z-index:3;max-width:92%}
+#level-tabs button{padding:8px 16px;font-size:12px;border-radius:999px;background:#ffffffee;box-shadow:0 2px 8px #0002}
+#level-tabs button.active{background:#176b65;border-color:#176b65;color:#fff;font-weight:bold}
+.view-angle input{background:#f3f6f7;color:#455a64;cursor:default}
+.size-row{display:flex;align-items:center;gap:10px;font-size:11px;color:#455a64;margin:4px 0 12px}
+.size-row input{flex:1;accent-color:#176b65}
+.size-row .num{display:flex;align-items:center;gap:3px;color:#176b65;font-weight:bold}
+.size-row .num input{flex:none;width:76px;padding:6px 7px;border:1px solid #dce3e6;border-radius:7px;font-size:12px;text-align:right;background:#fff;accent-color:auto}
+.field{display:block;font-size:11px;color:#647780;margin:16px 0 0}
+.field select{display:block;width:100%;margin-top:7px;padding:11px 10px;border:1px solid #dce3e6;border-radius:8px;background:#fff;font-size:13px;color:#283942}
+.swap-row{display:flex;justify-content:flex-end;margin:6px 0}
+.route-msg{font-size:12px;color:#455a64;margin:14px 0 8px;min-height:1em}
+.route-msg.err{color:#a33232}
+#route-steps{margin:0 0 12px;padding-left:20px;font-size:12px;line-height:1.7;color:#33424d}
+.route-tools{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.route-tools button.on{background:#176b65;border-color:#176b65;color:#fff}
+#route-banner{position:fixed;top:92px;left:50%;transform:translateX(-50%);z-index:30;background:#176b65;color:#fff;font:600 13px/1.3 sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 4px 14px #0004;pointer-events:none;max-width:90vw;text-align:center}
+body.route-draw #labels>*{pointer-events:none!important}
+.color-row{display:flex;align-items:center;gap:8px;font-size:11px;color:#455a64;margin:4px 0 12px}
+.color-row span{margin-right:auto}
+.color-row button{min-width:64px}
+.color-row button.active{border-color:#247d72;background:#edf7f3;color:#176b65;font-weight:bold}
+.level-label.wt,.icon-marker.wt .cap{color:#fff}
+.icon-marker.wt .cap{background:#273b43d9}
+.level-label.wt.sel{background:#273b43b0}
+.panel-tabs{display:flex;gap:8px;position:relative;z-index:2}
+.panel-tabs button{padding:9px 16px;font-size:12px;border-radius:999px}
+.panel-tabs button.active{background:#176b65;border-color:#176b65;color:#fff;font-weight:bold}
+#side{position:relative;overflow:clip;min-width:0;border-left:1px solid #e7ebed;background:#fafbfb}
+#side .side-panel{position:absolute;inset:0;border-left:0;transform:translateX(100%);visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
+#side .side-panel.open{transform:none;visibility:visible;transition:transform .3s ease,visibility 0s}
+/* ---- Phone layout (max-width 800px): Google-Maps style. Wider screens keep the desktop layout above. ---- */
+#venue-close{display:none}
+@media(max-width:800px){
+  html,body{height:100%;overflow:hidden}
+  header{position:absolute;top:0;left:0;right:0;height:auto;padding:10px 12px;border:0;background:none;pointer-events:none;display:block}
+  .brand{display:none}
+  .search{position:relative;left:auto;top:auto;transform:none;width:100%;max-width:none;margin:0;flex:none;pointer-events:auto}
+  .search input{border:0;box-shadow:0 2px 10px #0003;padding:13px 16px 13px 42px;font-size:15px}
+  #search-list{max-height:55vh}
+  main{display:block;height:100vh;height:100dvh}
+  #viewport{position:absolute;inset:0;height:100%;min-height:0}
+  #zoom,.viewport-bottom{display:none}
+  #status{top:70px;left:14px}
+  #reset-view{top:68px;right:12px}
+  #level-tabs{top:auto;bottom:calc(60px + env(safe-area-inset-bottom));left:0;right:0;transform:none;max-width:none;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;padding:6px 12px;scrollbar-width:none}
+  #level-tabs button:first-child{margin-left:auto}#level-tabs button:last-child{margin-right:auto}
+  #level-tabs::-webkit-scrollbar{display:none}
+  #level-tabs button{flex:none;padding:7px 14px;font-size:12px}
+  /* bottom bar */
+  .panel-tabs{position:fixed;left:0;right:0;bottom:0;height:calc(56px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);justify-content:center;align-items:center;background:#fff;border-top:1px solid #e1e7ea;pointer-events:auto;z-index:50}
+  .panel-tabs button{padding:10px 22px;font-size:13px}
+  #tab-venue::before{content:"";display:inline-block;width:16px;height:16px;margin-right:8px;vertical-align:-3px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l10 10-10 10L2 12zm-1 6v3H8v3h3v3l5-4.5z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l10 10-10 10L2 12zm-1 6v3H8v3h3v3l5-4.5z'/%3E%3C/svg%3E") center/contain no-repeat}
+  /* Find venue slides up from the bottom bar and stays until the x is tapped */
+  #side{position:fixed;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom));z-index:40;overflow:visible;border:0;background:none;transform:translateY(calc(100% + 70px));visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
+  #side:has(#panel-venue.open){transform:none;visibility:visible;transition:transform .3s ease,visibility 0s}
+  #side .side-panel{position:relative;inset:auto;transform:none;visibility:visible;transition:none;display:none;max-height:55vh;max-height:55dvh;overflow:auto;border-radius:18px 18px 0 0;box-shadow:0 -4px 20px #0003;padding:20px 20px 24px}
+  #side .side-panel.open{display:block}
+  #panel-arrange{display:none!important}
+  #panel-venue h1{font-size:20px;margin:6px 0 5px}
+  #venue-close{display:block;position:absolute;top:10px;right:12px;width:34px;height:34px;padding:0;border-radius:50%;font-size:22px;line-height:1;text-align:center;background:#f1f4f5;border-color:#f1f4f5}
+}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="brand-icon">▱</span><div><strong>Open House 2026 directory</strong><small>XINMIN SEC SCH</small></div></div>
+  <div class="search">
+    <input id="search-input" type="search" placeholder="Search a room or label…" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="search-list" aria-label="Search rooms and labels">
+    <div id="search-list" role="listbox" hidden></div>
+  </div>
+  <nav class="panel-tabs" aria-label="Side panels">
+    <!-- Arrange Levels is hidden for now: remove the "hidden" attribute (and swap active/open back onto it and #panel-arrange) to bring it back -->
+    <button type="button" id="tab-arrange" data-panel="arrange" aria-pressed="false" hidden>Arrange Levels</button>
+    <button type="button" id="tab-venue" class="active" data-panel="venue" aria-pressed="true">Find venue</button>
+  </nav>
+</header>
+<main>
+  <section id="viewport" aria-label="Interactive 3D campus">
+    <div id="status" role="status">Loading your models…</div>
+    <div class="viewport-bottom"><span><i></i> White canvas</span><span>Drag to orbit · Right-drag to pan · Scroll to zoom</span></div>
+    <div id="labels"></div>
+    <div id="zoom" aria-live="off">Zoom distance: –</div>
+    <button id="reset-view" title="Go back to the default view">Reset view</button>
+    <div id="level-tabs" role="group" aria-label="Choose a level to view"></div>
+  </section>
+  <div id="side">
+  <aside id="panel-arrange" class="side-panel" aria-hidden="true" inert>
+    <div class="eyebrow">YOUR CAMPUS</div>
+    <h1>Arrange your levels.</h1>
+    <p class="intro">Levels are stacked bottom to top. Select a level or label to move it.</p>
+
+    <div class="view-angle">
+      <div class="section-title" style="margin-top:0"><h3>View angle</h3><span>degrees from the default view</span></div>
+      <div class="triple">
+        <label>Tilt · X<input id="angle-x" value="0.0" readonly tabindex="-1" aria-label="Tilt angle in degrees"></label>
+        <label>Turn · Y<input id="angle-y" value="0.0" readonly tabindex="-1" aria-label="Turn angle in degrees"></label>
+        <label>Roll · Z<input id="angle-z" value="0.0" readonly tabindex="-1" aria-label="Roll angle in degrees"></label>
+      </div>
+      <div class="section-title"><h3>View shift</h3><span>model units from the default view</span></div>
+      <div class="triple">
+        <label>Left / right · X<input id="shift-x" value="0.0" readonly tabindex="-1" aria-label="Shift left or right"></label>
+        <label>Up / down · Y<input id="shift-y" value="0.0" readonly tabindex="-1" aria-label="Shift up or down"></label>
+        <label>Front / back · Z<input id="shift-z" value="0.0" readonly tabindex="-1" aria-label="Shift front or back"></label>
+      </div>
+      <p class="hint" style="margin:8px 0 0">Hold Shift and drag with the left mouse button to move the view. Reset view brings everything back to 0.</p>
+    </div>
+    <div class="divider" style="margin:18px 0"></div>
+
+    <div class="section-title"><h3>Levels</h3><button id="add-glb" class="small">+ Add GLB</button></div>
+    <div id="levels" class="item-list"></div>
+
+    <div class="section-title"><h3>Routes</h3><span id="route-count"></span></div>
+    <div class="route-tools">
+      <button type="button" id="route-draw" class="small" aria-pressed="false">✏️ Draw routes</button>
+      <button type="button" id="route-erase" class="small" aria-pressed="false" disabled>Erase</button>
+      <button type="button" id="route-undo" class="small" disabled>Undo</button>
+      <button type="button" id="route-clear" class="small danger" disabled>Clear level</button>
+    </div>
+    <p class="hint" style="margin-top:0">Turn on Draw routes, show one level, then click along its corridors. Points snap to staircases and to earlier points; click a line to start a branch. Enter or Esc ends a line. Visitors use these routes in “Find venue”.</p>
+
+    <fieldset id="editor" disabled>
+      <div class="section-title"><h2 id="selected-title">Nothing selected</h2><label class="check"><input id="visible" type="checkbox" checked>Visible</label></div>
+      <div class="section-title"><h3>Position</h3><span>model units</span></div>
+      <div class="triple">
+        <label>Left / right · X<input id="x" type="number" step="1" min="-10000" max="10000"></label>
+        <label>Elevation · Y<input id="y" type="number" step="1" min="-10000" max="10000"></label>
+        <label>Front / back · Z<input id="z" type="number" step="1" min="-10000" max="10000"></label>
+      </div>
+      <label class="rotation" id="rotation-row">Rotation <input id="rotation" type="number" step="5" min="-360" max="360"><span>°</span></label>
+      <label class="size-row" id="own-size-row">Size <input id="own-size" type="range" min="30" max="400" step="10" value="100"><span class="num"><input id="own-size-num" type="number" min="10" max="1000" step="10" value="100" aria-label="Label size in percent">%</span></label>
+      <div class="color-row" id="color-row"><span>Font color</span><button type="button" id="fc-black" class="small">Black</button><button type="button" id="fc-white" class="small">White</button></div>
+      <div class="block-row" id="block-row"><div id="block-chips"></div><button id="block-pick" class="small">Choose blocks</button><button id="block-clear" class="small">Clear all</button></div>
+      <label class="check gizmo"><input id="gizmo" type="checkbox" checked>Show position handles</label>
+      <button id="duplicate" class="full" style="margin-bottom:8px">Duplicate this label</button>
+      <button id="remove" class="full danger">Remove selected</button>
+    </fieldset>
+
+    <div class="divider"></div>
+    <div class="section-title"><h3>Labels</h3><button id="add-label" class="small">+ Add label</button></div>
+    <div id="label-list"></div>
+    <p class="hint">Ctrl/Shift+click labels (here or on the map) to select several and move them together, or use “Select all” on a level. Drag the ⋮⋮ grip to reorder (or press Alt+↑ / Alt+↓ in a label's text box). A new label is added to the selected level.</p>
+
+    <div class="divider"></div>
+    <div class="section-title"><h3>Icons</h3><span>click to add</span></div>
+    <div id="icon-palette"></div>
+    <p class="hint">Icons of the same kind share a colour. Each one appears in the Labels list above, where you can edit its caption or remove it.</p>
+
+    <div class="saved" id="saved">Changes are saved in this browser.</div>
+    <p class="footnote">Your original GLB files remain unchanged.</p>
+  </aside>
+  <aside id="panel-venue" class="side-panel open">
+    <button type="button" id="venue-close" aria-label="Close Find venue">×</button>
+    <div class="eyebrow">OPEN HOUSE</div>
+    <h1>Find venue.</h1>
+    <p class="intro">Choose where you are and where you want to go. The fastest route is drawn on the map, using the staircases when you need to change level.</p>
+    <label class="field">From (origin)<select id="route-from" aria-label="Origin"></select></label>
+    <div class="swap-row"><button type="button" id="route-swap" class="small" title="Swap origin and destination">⇅ Swap</button></div>
+    <label class="field" style="margin-top:0">To (destination)<select id="route-to" aria-label="Destination"></select></label>
+    <p id="route-msg" class="route-msg" role="status"></p>
+    <ol id="route-steps"></ol>
+    <button type="button" id="route-clear-path" class="small" hidden>Clear route</button>
+  </aside>
+  </div>
+</main>
+<input id="glb-file" type="file" accept=".glb" multiple hidden>
+
+<script>
+document.querySelectorAll('.panel-tabs button').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.panel-tabs button').forEach(b => {
+    const on = b === btn;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on);
+    const p = document.getElementById('panel-' + b.dataset.panel);
+    p.classList.toggle('open', on);
+    p.toggleAttribute('inert', !on);
+    p.setAttribute('aria-hidden', !on);
+  });
+}));
+// Phone layout: Find venue starts closed and stays open until its x is tapped; desktop keeps the side panel open.
+{
+  const mq = matchMedia('(max-width:800px)');
+  const setVenue = on => {
+    const t = document.getElementById('tab-venue'), p = document.getElementById('panel-venue');
+    t.classList.toggle('active', on); t.setAttribute('aria-pressed', on);
+    p.classList.toggle('open', on); p.toggleAttribute('inert', !on); p.setAttribute('aria-hidden', !on);
+  };
+  document.getElementById('venue-close').addEventListener('click', () => setVenue(false));
+  mq.addEventListener('change', e => setVenue(!e.matches));
+  window.addEventListener('route-found', () => { if (mq.matches) setVenue(false); });
+  if (mq.matches) setVenue(false);
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {TransformControls} from 'three/addons/controls/TransformControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+
+// Levels kept in the layout but not offered to visitors (no tab, search hit or venue). Remove an id from this list to bring the level back.
+const HIDDEN_LEVELS = new Set(['upload-level-5', 'upload-level-6']);
+const isHidden = l => HIDDEN_LEVELS.has(l.id);
+
+// The levels that load automatically from the models folder, stacked in this order (bottom to top).
+const DEFAULTS = [
+  {id: 'level-2', name: 'Level 2', url: './models/level-2.glb', label: 'Level 2 · Second level'},
+  {id: 'level-3', name: 'Level 3', url: './models/level-3.glb', label: 'Level 3 · Third level'},
+];
+
+// Icon categories: icons of the same nature share a colour and a heading.
+const CATS = {
+  access:  {name: 'Toilets & access', color: '#1b8fd0'},
+  nav:     {name: 'Navigation',       color: '#23996b'},
+  pin:     {name: 'Pin', color: '#ea4f41'},
+};
+// Glyphs are drawn on a 24x24 grid. Filled by default; class="s" means stroked.
+const ICONS = {
+  toilet:   {name: 'Toilet', cat: 'access', g: '<circle cx="7" cy="5" r="1.9"/><path d="M4.4 9h5.2v6.2H8.2V20H5.8v-4.8H4.4z"/><rect x="11.55" y="3" width=".9" height="18"/><circle cx="17" cy="5" r="1.9"/><path d="M17 8.6l3.5 7.2h-1.7V20h-3.6v-4.2h-1.7z"/>'},
+  stairs:   {name: 'Stairs', cat: 'nav', g: '<path class="s" d="M4 20h4.5v-4.2H13v-4.2h4.5V7.5H20"/>'},
+  // `bare` = drawn without a coloured tile.
+  pin:      {name: 'Pin', cat: 'pin', bare: true, g: '<path fill="#ea4f41" d="M12 1.5C7.3 1.5 3.5 5.2 3.5 9.8c0 6.3 8.5 12.7 8.5 12.7s8.5-6.4 8.5-12.7C20.5 5.2 16.7 1.5 12 1.5z"/><circle fill="#c0392b" cx="12" cy="9.8" r="5.3"/><circle fill="#fff" cx="12" cy="9.8" r="3.1"/>'},
+};
+const iconBadge = key => ICONS[key].bare
+  ? `<span class="ic bare"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[key].g}</svg></span>`
+  : `<span class="ic" style="background:${CATS[ICONS[key].cat].color}"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[key].g}</svg></span>`;
+const isPin = l => l.icon === 'pin';
+
+const $ = id => document.getElementById(id);
+const host = $('viewport');
+const KEY = 'campus-studio-layout-v2';
+const V3 = THREE.Vector3;
+
+// ---------- scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+const camera = new THREE.PerspectiveCamera(38, 1, .05, 100000);
+const renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = .85;
+host.prepend(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8896aa, 1.7));
+const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(-70, 130, 90); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, .55); fill.position.set(80, 50, -70); scene.add(fill);
+
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.maxPolarAngle = Math.PI * .495;
+orbit.maxDistance = Infinity;   // no limit on zooming out
+// Touch screens: one finger orbits, pinching zooms (fingers apart = closer), and twisting two fingers turns the map about its vertical axis.
+orbit.touches = {ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN};
+{
+  const el = renderer.domElement, fingers = new Map(), UP = new V3(0, 1, 0);
+  let lastAngle = null;
+  const angle = () => { const [a, b] = [...fingers.values()]; return Math.atan2(b.y - a.y, b.x - a.x); };
+  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, {x: e.clientX, y: e.clientY}); lastAngle = fingers.size === 2 ? angle() : null; });
+  el.addEventListener('pointermove', e => {
+    if (e.pointerType !== 'touch' || !fingers.has(e.pointerId)) return;
+    fingers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (fingers.size !== 2) return;
+    const now = angle();
+    if (lastAngle !== null) {
+      let d = now - lastAngle; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
+      const off = camera.position.clone().sub(orbit.target).applyAxisAngle(UP, d);   // camera goes round the other way, so the map turns with the fingers
+      camera.position.copy(orbit.target).add(off); userMoved = true; orbit.update();
+    }
+    lastAngle = now;
+  });
+  const lift = e => { if (e.pointerType !== 'touch') return; fingers.delete(e.pointerId); lastAngle = null; };
+  el.addEventListener('pointerup', lift); el.addEventListener('pointercancel', lift);
+}
+const handles = new TransformControls(camera, renderer.domElement);
+handles.setMode('translate');
+handles.setSize(.75);
+scene.add(handles.getHelper());
+handles.addEventListener('dragging-changed', e => { orbit.enabled = !e.value; });
+handles.addEventListener('objectChange', () => {
+  if (multi.size && selection?.kind === 'label' && lastPos) moveGroup(worldPos(selection).sub(lastPos));
+  updateFields(); persist();
+});
+
+// Server models are always re-fetched so a replaced GLB shows up on refresh.
+const serverLoader = new GLTFLoader();
+serverLoader.setRequestHeader({'Cache-Control': 'no-cache'});
+const fileLoader = new GLTFLoader();
+
+// ---------- state ----------
+const levels = [];   // {id, name, root, base, home, saved, btn}
+const labels = [];   // {text, level, anchor, el, visible, row, input}
+let selection = null; // {kind: 'level' | 'label', item}
+let ready = false;
+let counter = 0;
+let fitDistance = 0;  // camera distance of the last "Fit all", used as the 1.0x zoom reference
+
+const status = message => { $('status').textContent = message; };
+
+// Until the visitor first drags or zooms, keep the opening view framed to the window, even if the window is still settling on load.
+let userMoved = false;
+orbit.addEventListener('start', () => { userMoved = true; });
+// Default view of each level (used when the page opens, when a level is picked, and by "Reset view"), as the side panel shows it:
+//   tilt = View angle X, turn = View angle Y (roll Z is always 0), shift = View shift X / Y / Z,
+//   zoom = the "× Fit view" number (so it looks the same in any window size),
+//   fitScale = a small correction to the Fit view size so that zoom and the zoom distance in units both come out as specified.
+// Levels are matched by the number in their name; any level not listed here (Level 1, 2, 3 ...) uses "default".
+const VIEWS = {
+  default: {tilt: -0.9, turn: -4.7, shift: new V3(-4.4, -4.7, 5.6), zoom: 1.44},          // zoom distance 92.8 on Level 2 / 3
+  1: {tilt: 1.4, turn: -5.2, shift: new V3(-9.5, -6.2, 7.7), zoom: 1.44, fitScale: .9987},   // zoom distance 103.4
+  2: {tilt: -0.9, turn: -4.7, shift: new V3(-6.3, -5.7, 6.8), zoom: 1.44},                  // zoom distance 92.8
+  3: {tilt: -3.7, turn: -6.1, shift: new V3(-5.3, -5.2, 6.3), zoom: 1.17, fitScale: .9892},   // zoom distance 93.4
+  4: {tilt: 4.3, turn: -4.7, shift: new V3(-2.9, -3.8, 4.8), zoom: 1.11, fitScale: .9628},   // zoom distance 93.0 (in a window about 1.96 times wider than tall)
+  5: {tilt: 0, turn: -5.2, shift: new V3(-31.1, -2.9, 3.7), zoom: 1, fitScale: .9932},       // zoom distance 71.7
+  6: {tilt: 0, turn: -5.2, shift: new V3(-31.1, -2.9, 3.7), zoom: 1, fitScale: .9932},       // zoom distance 71.7
+};
+const viewFor = level => VIEWS[/(\d+)/.exec(level.name)?.[1]] || VIEWS.default;
+const defaultEuler = new THREE.Euler();   // camera orientation of the default view, so the side panel can show angles relative to it
+const defaultTarget = new V3();           // the point the default view looks at, so the side panel can show how far Shift+drag has moved the view
+const phoneInsets = () => matchMedia('(max-width:800px)').matches ? {top: 70, bottom: 120} : null;
+function resize() {
+  const w = host.clientWidth, h = host.clientHeight;
+  if (!w || !h) return;
+  camera.aspect = w / h; renderer.setSize(w, h);
+  // Phone layout: the search bar covers the top and the level buttons + Find venue bar cover the bottom, so the model is framed in the space between and shifted to its centre.
+  const ins = phoneInsets();
+  if (ins) camera.setViewOffset(w, h, 0, (ins.bottom - ins.top) / 2, w, h); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+  if (ready && !userMoved && levels.length) fit();
+}
+new ResizeObserver(resize).observe(host);
+
+function fit() {
+  const b = new THREE.Box3();
+  let shown = 0, only = null;
+  for (const l of levels) if (l.root.visible) { b.union(new THREE.Box3().setFromObject(l.root)); shown++; only = l; }
+  if (b.isEmpty()) { status('Nothing to frame yet.'); return; }
+  orbit.enableDamping = false; orbit.update(); orbit.enableDamping = true;   // drop any leftover drag momentum so it can't bend the new view
+  const center = b.getCenter(new V3());
+  // The side panel's View angle reads 0 / 0 / 0 at this base direction. A view's tilt and turn are measured from it.
+  camera.position.copy(center).add(new V3(.08, 1, .82).normalize()); camera.lookAt(center); camera.updateMatrixWorld(true);
+  defaultEuler.setFromQuaternion(camera.quaternion, 'YXZ');
+  const directionFor = v => new V3(0, 0, 1).applyEuler(new THREE.Euler(defaultEuler.x - THREE.MathUtils.degToRad(v.tilt), defaultEuler.y + THREE.MathUtils.degToRad(v.turn), 0, 'YXZ'));   // from the model to the camera
+  const view = shown === 1 ? viewFor(only) : VIEWS.default;   // a single level uses its own default view
+  const ins = phoneInsets();   // on a phone the model must fit whole inside the free area, so use the plain fit distance (no desktop close-up or shift)
+  const usable = ins ? Math.max(.4, 1 - (ins.top + ins.bottom) / host.clientHeight) : 1;
+  const half = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  // camera direction and the distance at which the whole box fits, for a view turned by extraTurn degrees
+  const framing = extraTurn => {
+    const d = directionFor({tilt: view.tilt, turn: view.turn + extraTurn});
+    camera.position.copy(center).add(d); camera.lookAt(center); camera.updateMatrixWorld(true);   // "Fit view" (the 1.0x zoom) is measured from this direction
+    const rotation = new THREE.Matrix3().setFromMatrix4(camera.matrixWorldInverse);
+    let needed = 0;
+    for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) {
+      const p = new V3(x, y, z).sub(center).applyMatrix3(rotation);
+      needed = Math.max(needed, Math.abs(p.y) / (half * usable) + p.z, Math.abs(p.x) / (half * camera.aspect) + p.z);
+    }
+    return {dir: d, needed, extraTurn};
+  };
+  const best = framing(0), dir = best.dir;   // same viewing angle as the desktop, just zoomed out until the whole level fits
+  const distance = best.needed * (ins ? 1.16 : 1.2) * (view.fitScale ?? 1);
+  fitDistance = Math.min(Math.max(distance, 10), orbit.maxDistance);
+  const opening = !userMoved && shown === 1 && !ins;   // the opening view of a single level is view.zoom times closer than the fit distance, and moved by view.shift
+  const target = opening ? center.clone().add(view.shift) : center;
+  camera.position.copy(target).addScaledVector(dir, opening ? fitDistance / view.zoom : fitDistance);
+  orbit.target.copy(target); defaultTarget.copy(center);
+  camera.near = Math.max(.01, distance / 10000);
+  camera.far = Math.max(100000, distance * 20);   // far plane kept large so the scene isn't clipped when zoomed far out
+  camera.updateProjectionMatrix(); orbit.update();
+}
+
+// ---------- levels ----------
+const topY = () => levels.reduce((m, l) => Math.max(m, l.home.y + l.base.y), 0);
+
+function build(gltf, id, name, saved) {
+  const model = gltf.scene;
+  model.traverse(o => { if (o.isLight || o.isCamera) o.visible = false; });
+  const b = new THREE.Box3().setFromObject(model);
+  if (b.isEmpty()) throw Error(`${name} has no visible geometry.`);
+  const center = b.getCenter(new V3()), base = b.getSize(new V3());
+  model.position.sub(new V3(center.x, b.min.y, center.z)); // centre on x/z, sit on y = 0
+  const root = new THREE.Group(); root.name = name; root.add(model); scene.add(root);
+  const level = {id, name, root, base, home: new V3(0, topY(), 0), saved, model, modelY: model.position.y};   // model/modelY: the drop-in effect moves the model, not the level's saved position
+  root.position.copy(level.home);
+  levels.push(level);
+  return level;
+}
+
+// Re-stack every level bottom to top, keeping any manual offsets the user made.
+function restack() {
+  let cursor = 0;
+  for (const l of levels) {
+    const home = new V3(0, cursor, 0);
+    l.root.position.add(home.clone().sub(l.home));
+    l.home.copy(home);
+    cursor += l.base.y;
+  }
+}
+
+function removeLevel(level) {
+  for (const label of labels.filter(l => l.level === level)) removeLabel(label, false);
+  dropLevelRoutes(level);
+  scene.remove(level.root);
+  level.root.traverse(o => {
+    if (!o.isMesh || o.userData.route) return;
+    o.geometry?.dispose();
+    for (const m of [].concat(o.material)) m?.dispose();
+  });
+  levels.splice(levels.indexOf(level), 1);
+  restack();
+}
+
+// ---------- labels ----------
+// Grow a text area to fit its lines (labels can have several lines).
+function autosize(ta, min = 0) { ta.style.height = 'auto'; ta.style.height = Math.max(ta.scrollHeight + (ta.offsetHeight - ta.clientHeight), min) + 'px'; }
+// Edit a label's text right where it sits on the map: Enter or click away saves, Esc cancels.
+function renameOnScreen(l) {
+  if (document.getElementById('rename-box')) return;
+  select('label', l);
+  const r = l.el.getBoundingClientRect();
+  const box = document.createElement('textarea');
+  box.id = 'rename-box'; box.value = l.text; box.placeholder = 'Label text'; box.rows = 1;
+  box.setAttribute('aria-label', 'Rename label');
+  Object.assign(box.style, {position: 'fixed', zIndex: 20, left: r.left + 'px', top: r.top + 'px', width: Math.max(r.width + 24, 140) + 'px',
+    boxSizing: 'border-box', font: '12px sans-serif', lineHeight: '1.3', padding: '2px 6px', border: '2px solid #247d72', borderRadius: '6px', background: '#fff', resize: 'none', overflow: 'hidden', whiteSpace: 'pre'});
+  document.body.append(box);
+  autosize(box, Math.max(r.height, 26));
+  box.addEventListener('input', () => autosize(box, Math.max(r.height, 26)));
+  let done = false;
+  const finish = save => {
+    if (done) return; done = true;
+    if (save) {
+      setLabelText(l, box.value);
+      if (l.input) { l.input.value = l.text; autosize(l.input); }
+      updateFields(); persist();
+    }
+    box.remove();
+  };
+  // Enter saves; Shift+Enter starts a new line
+  box.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finish(true); } else if (e.key === 'Escape') finish(false); };
+  box.onblur = () => finish(true);
+  box.focus(); box.select();
+}
+
+function setLabelText(l, text) {
+  l.text = text;
+  if (l.icon) { const cap = l.el.querySelector('.cap'); cap.textContent = text; cap.style.display = text ? '' : 'none'; }
+  else l.el.textContent = text;
+}
+
+// Show a label's size (1 = 100%) in both the slider and the number box.
+function showOwnSize(v) {
+  $('own-size').value = Math.round(v * 100);
+  $('own-size-num').value = Math.round(v * 100);
+}
+
+// Per-label size multiplier (1 = normal size).
+function setLabelColor(l, c) {
+  l.color = c === 'white' ? 'white' : 'black';
+  l.el.classList.toggle('wt', l.color === 'white');
+  if (selection?.item === l) showFontColor(l.color);
+}
+const showFontColor = c => { $('fc-black').classList.toggle('active', c !== 'white'); $('fc-white').classList.toggle('active', c === 'white'); };
+
+function setLabelSize(l, v) {
+  l.size = v;
+  l.el.style.setProperty('--own', v);
+  if (selection?.item === l) showOwnSize(v);
+}
+
+// iconKey = null makes a plain text label; otherwise a coloured icon marker with an optional caption.
+function addLabel(level, text, position, iconKey = null) {
+  const anchor = new THREE.Object3D();
+  anchor.userData.anchor = true;
+  const n = labels.filter(l => l.level === level && l.icon).length;
+  anchor.position.copy(position || (iconKey
+    ? new V3(((n % 5) - 2) * 6, level.base.y + 2.5, Math.floor(n / 5) * 6)   // hover above the level, fanned out
+    : new V3(-level.base.x / 2 - 3, level.base.y / 2, 0)));
+  level.root.add(anchor);
+  const el = document.createElement('div');
+  el.className = iconKey ? (iconKey === 'pin' ? 'icon-marker pin' : 'icon-marker') : 'level-label';
+  if (iconKey) el.innerHTML = iconBadge(iconKey) + '<span class="cap"></span>';
+  $('labels').append(el);
+  const label = {text, level, anchor, el, visible: true, icon: iconKey, size: 1, color: 'black', blocks: []};
+  // pick a label straight from the map (Ctrl/Shift+click adds to the group); a text label with no linked block then asks for one
+  el.addEventListener('click', e => {
+    if (e.ctrlKey || e.shiftKey || e.metaKey) { toggleMulti(label); return; }
+    select('label', label);
+    if (!label.icon && !label.blocks.length && !label.pickDismissed) startPick(label);
+  });
+  el.addEventListener('dblclick', e => { e.preventDefault(); stopPick(); renameOnScreen(label); });   // double-click to rename in place
+  labels.push(label);
+  setLabelText(label, text);
+  return label;
+}
+
+function removeLabel(label, refresh = true) {
+  if (!labels.includes(label)) return;
+  label.anchor.removeFromParent();
+  label.el.remove();
+  multi.delete(label);
+  labels.splice(labels.indexOf(label), 1);
+  if (picking === label) stopPick();
+  if (label.blocks.length) { label.blocks = []; updateBlockHighlight(); }   // give the blocks their colour back
+  if (refresh) {
+    if (selection?.item === label) selection = null;
+    renderLists(); updateFields(); attachGizmo();
+    persist();
+  }
+}
+
+// ---------- selection & editor ----------
+function worldPos(s) {
+  if (s.kind === 'level') return s.item.root.position.clone();
+  s.item.level.root.updateMatrixWorld(true);
+  return s.item.anchor.getWorldPosition(new V3());
+}
+
+function setWorldPos(s, v) {
+  if (s.kind === 'level') s.item.root.position.copy(v);
+  else { s.item.level.root.updateMatrixWorld(true); s.item.anchor.position.copy(s.item.level.root.worldToLocal(v.clone())); }
+}
+
+// Extra labels selected together with the main one (Ctrl/Shift+click). Moving the main label moves them all by the same amount.
+const multi = new Set();let lastPos = null;
+
+function select(kind, item) {
+  multi.clear();
+  selection = {kind, item};
+  updateFields(); attachGizmo(); highlight();
+}
+
+// Ctrl/Shift+click: add or remove a label from the group that moves together.
+function toggleMulti(l) {
+  if (selection?.kind !== 'label') { select('label', l); return; }
+  if (l === selection.item) {
+    // dropping the main label: promote another one, or just clear if it was alone
+    const next = multi.values().next().value;
+    if (!next) { deselect(); return; }
+    multi.delete(next); selection = {kind: 'label', item: next};
+  } else if (multi.has(l)) multi.delete(l); else multi.add(l);
+  updateFields(); attachGizmo(); highlight();
+}
+
+// Select every label on a level.
+function selectLevelLabels(level) {
+  const group = labels.filter(l => l.level === level);
+  if (!group.length) return;
+  select('label', group[0]);
+  for (const l of group.slice(1)) multi.add(l);
+  updateFields(); highlight();
+}
+
+// Shift all the other selected labels by the same world-space amount the main one just moved.
+function moveGroup(delta) {
+  for (const l of multi) {
+    const s = {kind: 'label', item: l};
+    setWorldPos(s, worldPos(s).add(delta));
+  }
+}
+
+// Clear the selection: the position handles disappear and the editor greys out.
+function deselect() {
+  if (!selection) return;
+  multi.clear();
+  selection = null;
+  updateFields(); attachGizmo(); highlight();
+}
+
+// ---------- linked blocks ----------
+// A text label can be linked to one block (room) of its level. While the label is selected that block shows red;
+// it returns to its own colour as soon as the label is deselected. Blocks are found from the GLB's node names ("Room | floor", "Room | wall N", …).
+const RED = new THREE.MeshStandardMaterial({color: 0xe53935, roughness: .55, metalness: 0});
+const redMeshes = new Map();   // mesh -> its original material
+const rawName = o => o.userData?.name ?? o.name ?? '';
+const roomKey = o => rawName(o).split(/ \| |_\|_/)[0];
+// A link starting with "@" is a single part (e.g. one wall, shown as "Rifle Range · wall S-left.001"); any other link is a whole block.
+const roomTitle = room => (room.startsWith('@') ? room.slice(1).replace(/ \| |_\|_/, ' · ') : room.split(/ \| |_\|_/)[0]).replace(/\s*\n\s*/g, ' ');
+
+// One block = the parts that share a room name AND touch each other. The GLB has a few parts named after one room but
+// sitting next to another (e.g. two "General Office" walls at the Bookshop, or the path strips around the site named "Computer 02 | floor.001"),
+// so same-named parts that don't actually touch are separate blocks. The touch tolerance is small (0.1 model units) on purpose.
+function blockCluster(level, start) {
+  level.root.updateMatrixWorld(true);
+  const key = roomKey(start), parts = [];
+  level.root.traverse(o => { if (o.isMesh && roomKey(o) === key) parts.push({o, box: new THREE.Box3().setFromObject(o).expandByScalar(.05)}); });
+  const first = parts.find(p => p.o === start);
+  if (!first) return [start];
+  const seen = new Set([first]), queue = [first];
+  for (const p of queue) for (const q of parts) if (!seen.has(q) && p.box.intersectsBox(q.box)) { seen.add(q); queue.push(q); }
+  return [...seen].map(p => p.o);
+}
+// A block is saved under a stable id: the name of its floor part (or its first part). Older saves hold just the room name; that still finds its floor.
+const blockId = cluster => { const names = cluster.map(rawName).sort(); return names.find(n => / \| floor$/.test(n)) || names[0]; };
+function findBlock(level, id) {
+  if (id.startsWith('@')) {   // a single part, exactly as named
+    const one = [];
+    level.root.traverse(o => { if (o.isMesh && rawName(o) === id.slice(1)) one.push(o); });
+    return one;
+  }
+  let start = null;
+  level.root.traverse(o => { if (!start && o.isMesh && rawName(o) === id) start = o; });
+  if (!start) level.root.traverse(o => { if (!start && o.isMesh && rawName(o) === `${id} | floor`) start = o; });
+  return start ? blockCluster(level, start) : [];
+}
+function updateBlockHighlight() {
+  const want = new Set();
+  if (selection?.kind === 'label') for (const l of [selection.item, ...multi]) for (const id of l.blocks) for (const m of findBlock(l.level, id)) want.add(m);
+  for (const [m, mat] of redMeshes) if (!want.has(m)) { m.material = mat; redMeshes.delete(m); }
+  for (const m of want) if (!redMeshes.has(m)) { redMeshes.set(m, m.material); m.material = RED; }
+}
+
+let picking = null, pickBanner = null;
+function startPick(label) {
+  if (label.icon) return;
+  picking = label;
+  pickBanner ||= Object.assign(document.createElement('div'), {id: 'pick-banner'});
+  pickBanner.textContent = `Tap each block that belongs to “${roomTitle(label.text) || 'this label'}” (tap again to remove · Alt+click picks just one part) · Enter or Esc when done`;
+  document.body.append(pickBanner);
+  renderer.domElement.style.cursor = 'crosshair';
+  status('');
+}
+function stopPick() {
+  if (!picking) return;
+  picking.pickDismissed = true;   // don't ask again for this label until the page is reloaded; "Choose block" still works
+  picking = null; pickBanner?.remove();
+  renderer.domElement.style.cursor = '';
+}
+
+function highlight() {
+  if (picking && selection?.item !== picking) stopPick();
+  updateBlockHighlight();
+  for (const l of levels) l.btn?.classList.toggle('active', selection?.item === l);
+  for (const l of labels) { const on = selection?.item === l || multi.has(l); l.row?.classList.toggle('active', on); l.el.classList.toggle('sel', on); }
+  if (selection?.kind === 'label' && selection.item.row?.closest('.side-panel.open')) selection.item.row.scrollIntoView({block: 'nearest'});
+}
+
+function updateFields() {
+  const s = selection;
+  $('editor').disabled = !s;
+  if (!s) {
+    $('selected-title').textContent = 'Nothing selected';
+    for (const id of ['own-size-row', 'color-row', 'duplicate', 'rotation-row', 'block-row']) $(id).style.display = 'none';
+    for (const k of ['x', 'y', 'z']) $(k).value = '';
+    return;
+  }
+  const isLevel = s.kind === 'level', it = s.item;
+  $('selected-title').textContent = isLevel ? it.name : `${it.icon ? 'Icon' : 'Label'} · ${it.text.replace(/\s*\n\s*/g, ' ') || '(no caption)'}`;
+  const p = worldPos(s);
+  lastPos = p.clone();
+  if (multi.size) $('selected-title').textContent = `${multi.size + 1} labels selected · moving together`;
+  for (const k of ['x', 'y', 'z']) $(k).value = p[k].toFixed(2);
+  $('rotation-row').style.display = isLevel ? '' : 'none';
+  $('own-size-row').style.display = isLevel ? 'none' : '';
+  $('color-row').style.display = isLevel ? 'none' : '';
+  if (!isLevel) showFontColor(it.color);
+  $('duplicate').style.display = isLevel ? 'none' : '';
+  $('block-row').style.display = !isLevel && !it.icon && !multi.size ? '' : 'none';
+  if (!isLevel) {
+    $('block-chips').replaceChildren(...(it.blocks.length ? it.blocks.map(room => {
+      const chip = document.createElement('span'); chip.className = 'chip'; chip.append(roomTitle(room));
+      const x = document.createElement('button'); x.textContent = '×'; x.title = 'Unlink this block'; x.setAttribute('aria-label', `Unlink ${roomTitle(room)}`);
+      x.onclick = () => { it.blocks = it.blocks.filter(r => r !== room); updateFields(); updateBlockHighlight(); persist(); };
+      chip.append(x); return chip;
+    }) : ['No block linked']));
+    $('block-pick').textContent = it.blocks.length ? 'Add / remove blocks' : 'Choose blocks';
+    $('block-clear').style.display = it.blocks.length ? '' : 'none';
+  }
+  if (!isLevel) showOwnSize(it.size);  if (isLevel) $('rotation').value = THREE.MathUtils.radToDeg(it.root.rotation.y).toFixed(1);
+  $('visible').checked = isLevel ? it.root.visible : it.visible;
+}
+
+function attachGizmo() {
+  const s = selection;
+  if (!s || !$('gizmo').checked) { handles.detach(); return; }
+  const visible = s.kind === 'level' ? s.item.root.visible : s.item.visible && s.item.level.root.visible;
+  if (visible) handles.attach(s.kind === 'level' ? s.item.root : s.item.anchor); else handles.detach();
+}
+
+let dragLabel = null;
+const clearDropMarks = () => document.querySelectorAll('.label-row').forEach(r => r.classList.remove('dragging', 'drop-above', 'drop-below'));
+
+// Move `src` next to `target` in the labels list (before or after it) and save the new order.
+function moveLabel(src, target, before) {
+  labels.splice(labels.indexOf(src), 1);
+  labels.splice(labels.indexOf(target) + (before ? 0 : 1), 0, src);
+  renderLists(); persist();
+}
+
+// Level tabs at the bottom of the view: choose which level to look at.
+const levelNumber = l => { const m = /(\d+)/.exec(l.name); return m ? +m[1] : Infinity; };
+const levelTitle = l => /^level[\s_-]*\d+$/i.test(l.name) ? `Level ${levelNumber(l)}` : l.name;
+function renderTabs() {
+  const tabs = $('level-tabs');
+  if (levels.length < 2) { tabs.replaceChildren(); return; }
+  tabs.replaceChildren(...levels.filter(l => !isHidden(l)).sort((a, b) => levelNumber(a) - levelNumber(b)).map(l => {
+    const b = document.createElement('button');
+    b.textContent = levelTitle(l);
+    b.onclick = () => viewLevel(l);
+    l.tab = b;
+    return b;
+  }));
+}
+
+function refreshEyes() {
+  for (const l of levels) {
+    l.tab?.classList.toggle('active', l.root.visible);
+    if (!l.eye) continue;
+    const on = l.root.visible;
+    l.eye.textContent = on ? '👁' : '🚫';
+    l.eye.classList.toggle('off', !on);
+    l.eye.title = on ? `Hide ${l.name} and all its labels` : `Show ${l.name} and all its labels`;
+    l.eye.setAttribute('aria-label', l.eye.title);
+    l.eye.setAttribute('aria-pressed', String(!on));
+  }
+}
+
+function renderLists() {
+  renderTabs();
+  const levelList = $('levels');
+  levelList.replaceChildren(...levels.map(l => {
+    const b = document.createElement('button');
+    b.textContent = l.name; b.title = l.name; b.onclick = () => select('level', l);
+    l.btn = b;
+    // eye button: hide / show this level's 3D model together with all its labels and icons
+    const eye = document.createElement('button'); eye.className = 'eye';
+    eye.onclick = () => {
+      l.root.visible = !l.root.visible;
+      refreshEyes(); updateFields(); attachGizmo(); persist();
+    };
+    l.eye = eye;
+    const wrap = document.createElement('div'); wrap.className = 'lvl'; wrap.append(b, eye);
+    return wrap;
+  }));
+  refreshEyes();
+  if (!levels.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No levels yet. Click “+ Add GLB”.'; levelList.replaceChildren(p); }
+
+  const labelList = $('label-list');
+  const buildRow = l => {
+    const row = document.createElement('div'); row.className = 'label-row';
+    const input = document.createElement('textarea'); input.rows = 1; input.value = l.text; input.placeholder = l.icon ? 'Caption (optional)' : 'Label text'; input.setAttribute('aria-label', l.icon ? 'Icon caption' : 'Label text');
+    input.title = 'Shift+Enter for a new line';
+    requestAnimationFrame(() => autosize(input));
+    input.onfocus = () => { if (!multi.size || !multi.has(l)) select('label', l); };
+    input.onmousedown = e => { if (e.ctrlKey || e.shiftKey || e.metaKey) { e.preventDefault(); toggleMulti(l); } };
+    input.oninput = () => { setLabelText(l, input.value); autosize(input); updateFields(); persist(); };
+    const del = document.createElement('button'); del.textContent = '×'; del.title = 'Remove'; del.setAttribute('aria-label', 'Remove');
+    del.onclick = () => removeLabel(l);
+    // drag the grip to reorder; Alt+Up / Alt+Down in the text box also moves the label
+    const grip = document.createElement('span'); grip.className = 'grip'; grip.textContent = '⋮⋮'; grip.title = 'Drag to reorder';
+    grip.onmousedown = () => { row.draggable = true; };
+    row.ondragstart = e => { dragLabel = l; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', l.text); row.classList.add('dragging'); };
+    row.ondragend = () => { row.draggable = false; dragLabel = null; clearDropMarks(); };
+    row.ondragover = e => {
+      if (!dragLabel || dragLabel === l || dragLabel.level !== l.level) return;
+      e.preventDefault(); clearDropMarks();
+      const r = row.getBoundingClientRect();
+      row.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-above' : 'drop-below');
+    };
+    row.ondrop = e => {
+      e.preventDefault();
+      const r = row.getBoundingClientRect();
+      if (dragLabel && dragLabel !== l && dragLabel.level === l.level) moveLabel(dragLabel, l, e.clientY < r.top + r.height / 2);
+      dragLabel = null; clearDropMarks();
+    };
+    input.onkeydown = e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); input.blur(); return; }   // Shift+Enter adds a line
+      if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      e.preventDefault();
+      const group = labels.filter(x => x.level === l.level);
+      const i = group.indexOf(l), j = i + (e.key === 'ArrowUp' ? -1 : 1);
+      if (j >= 0 && j < group.length) { moveLabel(l, group[j], e.key === 'ArrowUp'); l.input.focus(); }
+    };
+    row.append(grip);
+    if (l.icon) row.insertAdjacentHTML('beforeend', iconBadge(l.icon));
+    row.append(input, del); l.row = row; l.input = input; return row;
+  };
+  // group the labels under a heading for each level
+  labelList.replaceChildren(...levels.flatMap(level => {
+    const group = labels.filter(l => l.level === level);
+    const head = document.createElement('div'); head.className = 'level-head';
+    head.textContent = `${level.name} (${group.length})`;
+    head.onclick = () => select('level', level);
+    if (group.length > 1) {
+      const all = document.createElement('button'); all.className = 'small'; all.textContent = 'Select all';
+      all.title = 'Select every label on this level so they move together';
+      all.onclick = e => { e.stopPropagation(); selectLevelLabels(level); };
+      head.append(all);
+    }
+    if (!group.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No labels on this level.'; return [head, p]; }
+    return [head, ...group.map(buildRow)];
+  }));
+  if (!labels.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No labels.'; labelList.replaceChildren(p); }
+  highlight();
+  refreshVenues();
+}
+
+// ---------- persistence ----------
+function state() {
+  return {
+    version: 2,
+    extras: levels.filter(l => l.url).map(l => ({id: l.id, name: l.name, url: l.url})),
+    levels: levels.filter(l => l.saved).map(l => ({id: l.id, offset: l.root.position.clone().sub(l.home).toArray(), rotation: l.root.rotation.y, visible: l.root.visible})),
+    labels: labels.filter(l => l.level.saved).map(l => ({text: l.text, levelId: l.level.id, position: l.anchor.position.toArray(), visible: l.visible, icon: l.icon, size: l.size, color: l.color === 'white' ? 'white' : undefined, blocks: l.blocks.length ? l.blocks : undefined})),
+    routes: routeSnapshot(true),
+  };
+}
+
+// Layout is also written to layout.json by server.mjs (START.cmd). On a static host the PUT fails once and file saving stops.
+let fileSaving = true, fileTimer = 0, fileOk = false;
+function saveToFile() {
+  clearTimeout(fileTimer);
+  fileTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('layout.json', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(state(), null, 2)});
+      if (!r.ok) throw Error(r.status);
+      fileOk = true; $('saved').textContent = '✓ Changes saved to layout.json and this browser.';
+    } catch { fileSaving = false; fileOk = false; }
+  }, 400);
+}
+
+function persist() {
+  if (!ready) return;
+  try { localStorage.setItem(KEY, JSON.stringify(state())); $('saved').textContent = '✓ Changes saved in this browser.'; }
+  catch { $('saved').textContent = 'Use Save layout to keep your changes.'; }
+  if (fileSaving) saveToFile();
+}
+
+// GLBs added in the page are kept by server.mjs in models/uploads and listed under "extras" in the layout.
+const UPLOAD_URL = /^models\/uploads\/[\w\-. ]{1,100}\.glb$/i;
+
+async function loadExtras(data) {
+  validate(data);
+  for (const x of data.extras || []) {
+    if (levels.some(l => l.id === x.id)) continue;
+    try { const level = build(await serverLoader.loadAsync(`${x.url}?t=${Date.now()}`), x.id, x.name, true); level.url = x.url; }
+    catch (err) { console.error(err); status(`Could not load added model ${x.name}.`); }
+  }
+}
+
+function validate(d) {
+  const nums = (a, n) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && Math.abs(v) <= 10000);
+  if (d?.version !== 2 || !Array.isArray(d.levels)) throw Error('Choose a layout saved by this page.');
+  for (const l of d.levels) if (typeof l.id !== 'string' || !nums(l.offset, 3) || !Number.isFinite(l.rotation) || typeof l.visible !== 'boolean') throw Error('Layout contains invalid positions.');
+  if (d.extras !== undefined) {
+    if (!Array.isArray(d.extras)) throw Error('Layout contains invalid added models.');
+    for (const x of d.extras) if (typeof x.id !== 'string' || typeof x.name !== 'string' || !UPLOAD_URL.test(x.url)) throw Error('Layout contains invalid added models.');
+  }
+  if (d.labels !== undefined) {
+    if (!Array.isArray(d.labels)) throw Error('Layout contains invalid labels.');
+    for (const l of d.labels) if (typeof l.text !== 'string' || typeof l.levelId !== 'string' || !nums(l.position, 3) || (l.color !== undefined && l.color !== 'black' && l.color !== 'white') || (l.size !== undefined && !(Number.isFinite(l.size) && l.size >= .1 && l.size <= 10)) || (l.block !== undefined && (typeof l.block !== 'string' || l.block.length > 200)) || (l.blocks !== undefined && !(Array.isArray(l.blocks) && l.blocks.length <= 100 && l.blocks.every(b => typeof b === 'string' && b.length <= 200)))) throw Error('Layout contains invalid labels.');
+  }
+  if (d.routes !== undefined) {
+    const r = d.routes;
+    if (!r || !Array.isArray(r.nodes) || !Array.isArray(r.edges) || r.nodes.length > 5000 || r.edges.length > 10000) throw Error('Layout contains invalid routes.');
+    for (const n of r.nodes) if (typeof n.id !== 'string' || typeof n.levelId !== 'string' || !nums(n.p, 3)) throw Error('Layout contains invalid routes.');
+    for (const e of r.edges) if (!Array.isArray(e) || e.length !== 2 || e.some(v => typeof v !== 'string')) throw Error('Layout contains invalid routes.');
+  }
+  return d;
+}
+
+function restore(data) {
+  validate(data);
+  for (const d of data.levels) {
+    const l = levels.find(v => v.id === d.id && v.saved);
+    if (!l) continue;
+    l.root.position.copy(l.home).add(new V3().fromArray(d.offset));
+    l.root.rotation.y = d.rotation; l.root.visible = d.visible;
+  }
+  if (data.labels) {
+    for (const l of labels.filter(l => l.level.saved)) removeLabel(l, false);
+    for (const d of data.labels) {
+      const level = levels.find(v => v.id === d.levelId && v.saved);
+      if (!level) continue;
+      const label = addLabel(level, d.text, new V3().fromArray(d.position), ICONS[d.icon] ? d.icon : null);
+      label.visible = d.visible !== false;
+      if (d.size !== undefined) setLabelSize(label, d.size);
+      if (d.color === 'white') setLabelColor(label, 'white');
+      // "block" (a single name) is the older format; "blocks" is the list
+      if (!label.icon) {
+        const ids = [...(typeof d.block === 'string' ? [d.block] : []), ...(d.blocks || [])];
+        label.blocks = [...new Set(ids.map(b => { if (b.startsWith('@')) return b; const c = findBlock(level, b); return c.length ? blockId(c) : b; }))];   // older saves hold just a room name; convert to the block's id
+      }
+    }
+  }
+  if (data.routes) loadNet(data.routes);
+  selection = null;
+  updateBlockHighlight();
+  renderLists(); updateFields(); attachGizmo(); fit();
+}
+
+// ---------- loading ----------
+async function init() {
+  status('Loading levels…');
+  const results = await Promise.allSettled(DEFAULTS.map(d => serverLoader.loadAsync(`${d.url}?t=${Date.now()}`)));
+  const failed = [];
+  results.forEach((r, i) => {
+    const d = DEFAULTS[i];
+    if (r.status !== 'fulfilled') { failed.push(d.name); console.error(r.reason); return; }
+    try { addLabel(build(r.value, d.id, d.name, true), d.label); }
+    catch (err) { failed.push(`${d.name} (${err.message})`); }
+  });
+  ready = true;
+  renderLists();
+  // layout.json (saved by server.mjs / uploaded with the site) wins over this browser's copy
+  let fileLayout = null;
+  try { const r = await fetch(`layout.json?t=${Date.now()}`, {cache: 'no-store'}); if (r.ok) fileLayout = await r.json(); } catch {}
+  try {
+    const saved = fileLayout ? JSON.stringify(fileLayout) : localStorage.getItem(KEY);
+    if (saved) { const data = JSON.parse(saved); await loadExtras(data); restore(data); }
+  } catch { status('Saved layout could not be restored. Using the default.'); }
+  // Every visit starts on Level 1 only, framed to fit. The other levels stay one click away in the Levels list.
+  const first = levels.find(l => /^level[\s_-]*1$/i.test(l.name)) || levels[0];
+  for (const l of levels) l.root.visible = l === first;
+  refreshEyes();
+  updateFields();   // nothing selected on load, so no position handles are shown
+  fit();
+  status(failed.length ? `Could not load: ${failed.join(', ')}. Start this project using START.cmd.` : '');
+}
+
+// ---------- events ----------
+$('add-glb').onclick = () => $('glb-file').click();
+$('glb-file').onchange = async e => {
+  const files = [...e.target.files]; e.target.value = '';
+  let added = null;
+  for (const file of files) {
+    const url = URL.createObjectURL(file);
+    try {
+      const name = file.name.replace(/\.glb$/i, '');
+      const gltf = await fileLoader.loadAsync(url);
+      // Keep the file via server.mjs (models/uploads) so the level and its labels survive a refresh.
+      let id = `upload-${name.replace(/[^\w\-. ]/g, '_').slice(0, 80)}`, kept = false;
+      for (let n = 2; levels.some(l => l.id === id); n++) id = `upload-${name.replace(/[^\w\-. ]/g, '_').slice(0, 80)}-${n}`;
+      if (fileSaving) {
+        try { const r = await fetch(`models/uploads/${id.slice(7)}.glb`, {method: 'PUT', body: file}); kept = r.ok; } catch {}
+      }
+      const level = build(gltf, kept ? id : `file-${++counter}`, name, kept);
+      if (kept) level.url = `models/uploads/${id.slice(7)}.glb`;
+      addLabel(level, name); added = level;
+    } catch (err) { status(`Could not add ${file.name}: ${err.message}`); }
+    finally { URL.revokeObjectURL(url); }
+  }
+  if (added) { renderLists(); select('level', added); fit(); persist(); status(added.saved ? 'Added on top of the stack and saved to models/uploads.' : 'Added on top of the stack. It is not kept after a refresh — start with START.cmd to keep it, or put the file in the models folder.'); }
+};
+
+$('remove').onclick = () => {
+  const s = selection; if (!s) return;
+  if (s.kind === 'label') {
+    for (const l of [...multi, s.item]) removeLabel(l, false);
+    multi.clear(); selection = null;
+    renderLists(); updateFields(); attachGizmo(); persist();
+    return;
+  }
+  removeLevel(s.item);
+  selection = levels.length ? {kind: 'level', item: levels[0]} : null;
+  renderLists(); updateFields(); attachGizmo(); persist();
+  status('Removed from the view. The GLB file itself is unchanged.');
+};
+
+// Clicking anywhere outside a text field clears any accidental page-text highlight (e.g. after Ctrl+A).
+document.addEventListener('mousedown', e => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  getSelection()?.removeAllRanges();
+});
+
+// Delete key removes the selected label(s); ignored while typing in a field, and never removes a level.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Delete' || selection?.kind !== 'label') return;
+  const t = e.target;
+  if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+  e.preventDefault();
+  $('remove').click();
+});
+
+// Ctrl+C (Cmd+C on Mac) duplicates the selected label; normal copying still works inside text fields or with highlighted text.
+document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() !== 'c' || !(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.repeat || selection?.kind !== 'label') return;
+  const t = e.target;
+  if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || getSelection()?.toString()) return;
+  e.preventDefault();
+  $('duplicate').click();
+});
+
+// icon palette, grouped by category
+$('icon-palette').innerHTML = Object.entries(CATS).map(([cat, c]) =>
+  `<div class="cat-title"><i style="background:${c.color}"></i>${c.name.toUpperCase()}</div><div class="icon-grid">` +
+  Object.entries(ICONS).filter(([, i]) => i.cat === cat).map(([key, i]) =>
+    `<button class="icon-btn" data-icon="${key}" title="Add “${i.name}” icon" aria-label="Add ${i.name} icon">${iconBadge(key)}</button>`).join('') + '</div>').join('');
+$('icon-palette').onclick = e => {
+  const key = e.target.closest('.icon-btn')?.dataset.icon;
+  if (!key) return;
+  const level = selection ? (selection.kind === 'level' ? selection.item : selection.item.level) : levels[levels.length - 1];
+  if (!level) { status('Add a level first.'); return; }
+  const label = addLabel(level, ICONS[key].name, null, key);
+  renderLists(); select('label', label); persist();
+  status(`${ICONS[key].name} icon added above ${level.name}. Drag its handles or type X/Y/Z to place it.`);
+};
+
+// copy the selected label/icon (text, icon, size) to exactly the same X/Y/Z as the original
+$('duplicate').onclick = () => {
+  if (selection?.kind !== 'label') return;
+  const src = selection.item;
+  const copy = addLabel(src.level, src.text, src.anchor.position.clone(), src.icon);
+  copy.visible = src.visible; copy.blocks = [...src.blocks];
+  setLabelSize(copy, src.size); setLabelColor(copy, src.color);
+  renderLists(); select('label', copy); persist();
+  status('Label duplicated at the same X, Y and Z. Drag the copy or type new values to move it.');
+};
+
+$('add-label').onclick = () => {
+  const level = selection ? (selection.kind === 'level' ? selection.item : selection.item.level) : levels[levels.length - 1];
+  if (!level) { status('Add a level first.'); return; }
+  const label = addLabel(level, 'New label');
+  renderLists(); label.input.focus(); label.input.select(); persist();
+};
+
+for (const k of ['x', 'y', 'z']) $(k).addEventListener('change', () => {
+  if (!selection) return;
+  const v = Number($(k).value);
+  if (Number.isFinite(v) && Math.abs(v) <= 10000) {
+    const p = worldPos(selection), old = p.clone(); p[k] = v; setWorldPos(selection, p);
+    if (multi.size && selection.kind === 'label') moveGroup(p.sub(old));
+  }
+  updateFields(); persist();
+});
+$('rotation').onchange = () => {
+  if (selection?.kind !== 'level') return;
+  const v = Number($('rotation').value);
+  if (Number.isFinite(v) && Math.abs(v) <= 360) selection.item.root.rotation.y = THREE.MathUtils.degToRad(v);
+  updateFields(); persist();
+};
+$('visible').onchange = () => {
+  if (!selection) return;
+  if (selection.kind === 'level') selection.item.root.visible = $('visible').checked; else selection.item.visible = $('visible').checked;
+  refreshEyes(); attachGizmo(); persist();
+};
+$('gizmo').onchange = attachGizmo;
+// typing a percentage: applies live while the value is valid (10-1000), snaps back to the real size on leaving the box
+$('own-size-num').oninput = () => {
+  if (selection?.kind !== 'label') return;
+  const v = Number($('own-size-num').value);
+  if (Number.isFinite(v) && v >= 10 && v <= 1000) { for (const l of [selection.item, ...multi]) setLabelSize(l, v / 100); $('own-size').value = v; persist(); }
+};
+$('own-size-num').onchange = () => { if (selection?.kind === 'label') showOwnSize(selection.item.size); };
+for (const c of ['black', 'white']) $('fc-' + c).onclick = () => {
+  if (selection?.kind !== 'label') return;
+  for (const l of [selection.item, ...multi]) setLabelColor(l, c);
+  persist();
+};
+$('own-size').oninput = () => {
+  if (selection?.kind !== 'label') return;
+  for (const l of [selection.item, ...multi]) setLabelSize(l, Number($('own-size').value) / 100);
+  persist();
+};
+
+// Enter finishes choosing blocks
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && picking && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { e.preventDefault(); stopPick(); status('Done choosing blocks.'); }
+});
+
+// Esc deselects too
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  if (picking) { stopPick(); return; }   // Esc while choosing a block only cancels the choice
+  deselect();
+});
+
+// click a level in the viewport to select it; click empty space to deselect
+const ray = new THREE.Raycaster();
+let down = null;
+renderer.domElement.addEventListener('pointerdown', e => { down = {x: e.clientX, y: e.clientY}; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!ready || handles.dragging || handles.axis || !down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) return;
+  if (route.draw) { routeClick(e); return; }
+  const rect = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera);
+  const hit = ray.intersectObjects(levels.filter(l => l.root.visible).map(l => l.root), true)[0];
+  let obj = hit?.object;
+  while (obj && !levels.some(l => l.root === obj)) obj = obj.parent;
+  const level = levels.find(l => l.root === obj);
+  if (picking) {   // choosing blocks for a label: each clicked block (all its floor and wall parts) is added; clicking a linked block again removes it
+    if (!hit) { stopPick(); return; }   // clicking empty space finishes
+    if (level !== picking.level) { status(`Pick a block on ${picking.level.name}.`); return; }
+    const room = roomKey(hit.object);
+    if (!room || /^Plane/.test(room)) { status('That is the base plate. Pick one of the blocks.'); return; }
+    const label = picking;
+    let ids, title = roomTitle(room);
+    if (e.altKey) {   // Alt + click: just the clicked part (plus any copy of it sitting in exactly the same place), not the whole block
+      const box = new THREE.Box3().setFromObject(hit.object), key = roomKey(hit.object);
+      ids = [];
+      level.root.traverse(o => {
+        if (!o.isMesh || roomKey(o) !== key) return;
+        const b = new THREE.Box3().setFromObject(o);
+        if (b.min.distanceTo(box.min) < .05 && b.max.distanceTo(box.max) < .05) ids.push('@' + rawName(o));
+      });
+      title = roomTitle(ids[0] || '@' + rawName(hit.object));
+    } else ids = [blockId(blockCluster(level, hit.object))];
+    const had = ids.every(id => label.blocks.includes(id));
+    label.blocks = had ? label.blocks.filter(r => !ids.includes(r)) : [...new Set([...label.blocks, ...ids])];
+    updateFields(); updateBlockHighlight(); persist();
+    status(`${had ? 'Unlinked' : 'Linked'} “${title}” ·${label.blocks.length} link${label.blocks.length === 1 ? '' : 's'}. Enter or Esc when done.`);
+    return;
+  }
+  if (!hit) { deselect(); return; }   // clicking empty space deselects
+  if (level) select('level', level);
+});
+
+$('block-pick').onclick = () => { if (selection?.kind === 'label') startPick(selection.item); };
+$('block-clear').onclick = () => {
+  if (selection?.kind !== 'label') return;
+  selection.item.blocks = []; selection.item.pickDismissed = true;
+  updateFields(); updateBlockHighlight(); persist();
+};
+
+let lastZoomText = '', lastAngles = '';
+const viewEuler = new THREE.Euler();
+$('reset-view').onclick = () => { userMoved = false; fit(); };
+
+// ---------- choosing which level to view ----------
+// Picking a level fades the level being shown out, then the picked level drops in from above and eases to a stop.
+const FADE_MS = 320, DROP_MS = 800, DROP_HEIGHT = 45;
+const tweens = [];
+let viewToken = 0;
+const tween = (ms, fn) => new Promise(res => tweens.push({t0: performance.now(), ms, fn, res}));
+function finishTweens() { for (const tw of tweens.splice(0)) { tw.fn(1); tw.res(); } }   // jump an animation in progress to its end state
+function tickTweens() {
+  const now = performance.now();
+  for (const tw of [...tweens]) {
+    const k = Math.min(1, (now - tw.t0) / tw.ms);
+    tw.fn(k);
+    if (k >= 1) { tweens.splice(tweens.indexOf(tw), 1); tw.res(); }
+  }
+}
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);   // fast at first, then slows smoothly to a stop (no bounce)
+
+// Fade a level's model (a = 1 puts every material back exactly as it was).
+function setFade(level, a) {
+  level.fade = a;
+  if (!level.fadeMats) {
+    const mats = new Set();
+    level.root.traverse(o => { if (o.isMesh && !o.userData.route) for (const m of [].concat(o.material)) mats.add(m); });
+    level.fadeMats = [...mats].map(m => ({m, transparent: m.transparent, opacity: m.opacity}));
+  }
+  for (const f of level.fadeMats) {
+    const transparent = a >= 1 ? f.transparent : true;
+    f.m.opacity = a >= 1 ? f.opacity : f.opacity * a;
+    if (f.m.transparent !== transparent) { f.m.transparent = transparent; f.m.needsUpdate = true; }
+  }
+  if (a >= 1) level.fadeMats = null;
+}
+
+async function viewLevel(target) {
+  const my = ++viewToken;
+  finishTweens();
+  if (target.root.visible) { if (target.fadeMats) setFade(target, 1); target.labelFade = 1; target.model.position.y = target.modelY; }   // picked while it was fading out: keep it as it is
+  const outgoing = levels.filter(l => l.root.visible && l !== target);
+  if (!outgoing.length && target.root.visible) return true;   // already the level on show
+  deselect();
+  if (outgoing.length) {
+    const from = outgoing.map(l => l.fade ?? 1);
+    await tween(FADE_MS, k => outgoing.forEach((l, i) => { setFade(l, from[i] * (1 - k)); l.labelFade = l.fade; }));
+    if (my !== viewToken) return false;
+    for (const l of outgoing) { l.root.visible = false; setFade(l, 1); l.labelFade = 1; }
+  }
+  target.root.visible = true;
+  userMoved = false; fit(); refreshEyes();   // frame the picked level in the default view
+  setFade(target, 0); target.labelFade = 0;
+  await tween(DROP_MS, k => {
+    target.model.position.y = target.modelY + (1 - easeOutCubic(k)) * DROP_HEIGHT;
+    setFade(target, Math.min(1, k / .35));
+    target.labelFade = Math.max(0, (k - .7) / .3);   // the labels appear once the level has landed
+  });
+  return my === viewToken;   // false if another pick took over while this one was animating
+}
+
+// ---------- search ----------
+// A search box in the header lists every text label with its level. Picking one shows that level and highlights the label's linked blocks in red.
+const searchInput = $('search-input'), searchList = $('search-list');
+let searchHits = [], searchActive = -1;
+const oneLine = s => s.replace(/\s*\n\s*/g, ' ').trim();
+function renderSearch() {
+  const q = oneLine(searchInput.value).toLowerCase();
+  searchHits = labels.filter(l => !isHidden(l.level) && !l.icon && oneLine(l.text) && (!q || oneLine(l.text).toLowerCase().includes(q) || levelTitle(l.level).toLowerCase().includes(q)))
+    .sort((a, b) => oneLine(a.text).localeCompare(oneLine(b.text), undefined, {numeric: true, sensitivity: 'base'}));
+  searchActive = searchHits.length ? 0 : -1;
+  searchList.replaceChildren(...(searchHits.length ? searchHits.map((l, i) => {
+    const row = document.createElement('div');
+    row.className = 'opt'; row.setAttribute('role', 'option'); row.id = `opt-${i}`;
+    const name = document.createElement('span'); name.textContent = oneLine(l.text);
+    const where = document.createElement('small'); where.textContent = levelTitle(l.level);
+    row.append(name, where);
+    row.onmousedown = e => { e.preventDefault(); goToLabel(l); };   // mousedown, so the input doesn't lose focus first
+    row.onmousemove = () => setSearchActive(i);
+    return row;
+  }) : [Object.assign(document.createElement('div'), {className: 'search-empty', textContent: 'No matching label'})]));
+  setSearchActive(searchActive);
+  searchList.hidden = false; searchInput.setAttribute('aria-expanded', 'true');
+}
+function setSearchActive(i) {
+  searchActive = i;
+  [...searchList.querySelectorAll('.opt')].forEach((row, n) => { row.classList.toggle('active', n === i); if (n === i) row.scrollIntoView({block: 'nearest'}); });
+}
+function closeSearch() { searchList.hidden = true; searchInput.setAttribute('aria-expanded', 'false'); }
+
+async function goToLabel(label) {
+  closeSearch();
+  searchInput.value = oneLine(label.text); searchInput.blur();
+  if (!await viewLevel(label.level) || !label.level.root.visible) return;
+  select('label', label); handles.detach();   // its linked blocks turn red; no position handles for a visitor
+}
+
+searchInput.addEventListener('focus', () => { searchInput.select(); renderSearch(); });
+searchInput.addEventListener('input', renderSearch);
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (searchList.hidden) renderSearch();
+    if (searchHits.length) setSearchActive((searchActive + (e.key === 'ArrowDown' ? 1 : -1) + searchHits.length) % searchHits.length);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (searchHits[searchActive]) goToLabel(searchHits[searchActive]);
+  } else if (e.key === 'Escape') {
+    e.stopPropagation(); closeSearch(); searchInput.blur();
+  }
+});
+document.addEventListener('mousedown', e => { if (!e.target.closest('.search')) closeSearch(); });
+
+// ---------- routes ----------
+// A route network is drawn by hand on each level (points joined by lines, in the level's own coordinates, like the labels).
+// "Find venue" runs a shortest-path search over it; staircases on neighbouring levels are joined automatically.
+const net = {nodes: new Map(), edges: [], next: 1};   // nodes: id -> {id, level, p}; edges: {a, b} (two nodes)
+const route = {draw: false, erase: false, from: null, undo: []};
+const DASH = 1.3, GAP = 1.1;   // dotted route: length of each dash and of the gap between dashes
+const R_NET = .2, R_PATH = .38, STAIR_COST = 15, STAIR_MATCH = 16, PORTAL_RANGE = 8;
+const Y_AXIS = new V3(0, 1, 0);
+const routeMat = c => new THREE.MeshBasicMaterial({color: c, depthTest: false, depthWrite: false, toneMapped: false});
+const MAT = {net: routeMat(0x2f80ed), stair: routeMat(0x23996b), path: routeMat(0xe11d1d), start: routeMat(0x1f9d55), end: routeMat(0xe11d1d), preview: routeMat(0x8fbcf5)};
+const CYL = new THREE.CylinderGeometry(1, 1, 1, 8), BALL = new THREE.SphereGeometry(1, 14, 10);
+
+function piece(geo, mat, parent) {
+  const m = new THREE.Mesh(geo, mat);
+  m.userData.route = true; m.renderOrder = 999; m.raycast = () => {};
+  parent.add(m); return m;
+}
+function placeCyl(m, a, b, r) {
+  const d = b.clone().sub(a), len = d.length();
+  m.position.copy(a).addScaledVector(d, .5);
+  if (len > 1e-6) m.quaternion.setFromUnitVectors(Y_AXIS, d.divideScalar(len));
+  m.scale.set(r, Math.max(len, 1e-4), r);
+}
+function ball(parent, mat, p, r) { const m = piece(BALL, mat, parent); m.position.copy(p); m.scale.setScalar(r); return m; }
+function group(level, key) {
+  if (!level[key]) { level[key] = new THREE.Group(); level[key].userData.route = true; level.root.add(level[key]); }
+  return level[key];
+}
+
+// where people walk on a level: the height of its corridors ("Circulation" parts), so clicks land on the floor and not on a wall top
+function walkY(level) {
+  if (level.walkY !== undefined) return level.walkY;
+  level.root.updateMatrixWorld(true);
+  const drop = level.model.position.y - level.modelY, ys = [];
+  level.root.traverse(o => {
+    if (o.isMesh && !o.userData.route && [].concat(o.material).some(m => m?.name === 'Circulation')) ys.push(level.root.worldToLocal(new V3(0, new THREE.Box3().setFromObject(o).max.y, 0)).y - drop);
+  });
+  ys.sort((a, b) => a - b);
+  return level.walkY = (ys.length ? ys[ys.length >> 1] : 0) + .3;
+}
+
+// ----- the network -----
+function routeSnapshot(savedOnly) {
+  const ok = n => !savedOnly || n.level.saved;
+  return {
+    nodes: [...net.nodes.values()].filter(ok).map(n => ({id: n.id, levelId: n.level.id, p: n.p.toArray().map(v => +v.toFixed(3))})),
+    edges: net.edges.filter(e => ok(e.a) && ok(e.b)).map(e => [e.a.id, e.b.id]),
+  };
+}
+function loadNet(data) {
+  net.nodes.clear(); net.edges = [];
+  for (const d of data.nodes) {
+    const level = levels.find(l => l.id === d.levelId);
+    if (level) net.nodes.set(d.id, {id: d.id, level, p: new V3().fromArray(d.p)});
+  }
+  for (const [a, b] of data.edges) if (net.nodes.has(a) && net.nodes.has(b)) net.edges.push({a: net.nodes.get(a), b: net.nodes.get(b)});
+  net.next = 1 + Math.max(0, ...[...net.nodes.keys()].map(k => +k.replace(/\D/g, '') || 0));
+  drawNet(); routeButtons();
+}
+function dropLevelRoutes(level) {
+  for (const n of [...net.nodes.values()]) if (n.level === level) net.nodes.delete(n.id);
+  net.edges = net.edges.filter(e => net.nodes.has(e.a.id) && net.nodes.has(e.b.id));
+  clearPath();
+}
+const linked = (a, b) => net.edges.some(e => (e.a === a && e.b === b) || (e.a === b && e.b === a));
+const addEdge = (a, b) => { if (a !== b && !linked(a, b)) net.edges.push({a, b}); };
+const isStairNode = n => labels.some(l => l.icon === 'stairs' && l.level === n.level && Math.hypot(l.anchor.position.x - n.p.x, l.anchor.position.z - n.p.z) < .6);
+
+function drawNet() {
+  for (const l of levels) l.netGroup?.clear();
+  routeButtons();
+  if (!route.draw) return;
+  for (const e of net.edges) placeCyl(piece(CYL, MAT.net, group(e.a.level, 'netGroup')), e.a.p, e.b.p, R_NET);
+  for (const n of net.nodes.values()) ball(group(n.level, 'netGroup'), isStairNode(n) ? MAT.stair : MAT.net, n.p, R_NET * 2.6);
+}
+function routeButtons() {
+  const level = levels.filter(l => l.root.visible);
+  $('route-count').textContent = `${net.nodes.size} points · ${net.edges.length} lines`;
+  $('route-draw').classList.toggle('on', route.draw); $('route-draw').setAttribute('aria-pressed', String(route.draw));
+  $('route-erase').classList.toggle('on', route.erase); $('route-erase').setAttribute('aria-pressed', String(route.erase));
+  $('route-erase').disabled = !route.draw;
+  $('route-undo').disabled = !route.undo.length;
+  $('route-clear').disabled = !route.draw || level.length !== 1 || ![...net.nodes.values()].some(n => n.level === level[0]);
+}
+function changed() { route.undo.length > 100 && route.undo.shift(); clearPath(); drawNet(); persist(); }
+function pushUndo() { route.undo.push(routeSnapshot(false)); }
+
+// ----- drawing -----
+const canvasXY = e => { const r = renderer.domElement.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top, w: r.width, h: r.height}; };
+function px(level, p) {
+  const v = level.root.localToWorld(p.clone()).project(camera), r = renderer.domElement.getBoundingClientRect();
+  return {x: (v.x * .5 + .5) * r.width, y: (-v.y * .5 + .5) * r.height};
+}
+function planePoint(level, c) {
+  ray.setFromCamera(new THREE.Vector2(c.x / c.w * 2 - 1, -c.y / c.h * 2 + 1), camera);
+  level.root.updateMatrixWorld(true);
+  const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(Y_AXIS.clone().transformDirection(level.root.matrixWorld), level.root.localToWorld(new V3(0, walkY(level), 0)));
+  const hit = ray.ray.intersectPlane(plane, new V3());
+  return hit ? level.root.worldToLocal(hit) : null;
+}
+// nearest thing under the pointer, in screen pixels: an existing point, then a staircase, then a line, otherwise the floor
+function pickPoint(level, c) {
+  let best = null, bd = 14;
+  for (const n of net.nodes.values()) if (n.level === level) { const s = px(level, n.p), d = Math.hypot(s.x - c.x, s.y - c.y); if (d < bd) { bd = d; best = {node: n}; } }
+  if (best) return best;
+  let stair = null; bd = 26;
+  for (const l of labels) if (l.icon === 'stairs' && l.level === level && l.visible) { const s = px(level, l.anchor.position), d = Math.hypot(s.x - c.x, s.y - c.y); if (d < bd) { bd = d; stair = l; } }
+  if (stair) return {p: new V3(stair.anchor.position.x, walkY(level), stair.anchor.position.z)};
+  let edge = null; bd = 8;
+  for (const e of net.edges) {
+    if (e.a.level !== level) continue;
+    const a = px(level, e.a.p), b = px(level, e.b.p), dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy || 1;
+    const t = Math.min(1, Math.max(0, ((c.x - a.x) * dx + (c.y - a.y) * dy) / len2)), d = Math.hypot(a.x + dx * t - c.x, a.y + dy * t - c.y);
+    if (d < bd) { bd = d; edge = {edge: e, p: e.a.p.clone().lerp(e.b.p, t)}; }
+  }
+  if (edge) return edge;
+  const p = planePoint(level, c);
+  return p ? {p} : null;
+}
+// a point that lands on an existing line splits that line, so the two join up
+function splitLinesAt(node) {
+  for (const e of [...net.edges]) {
+    if (e.a.level !== node.level || e.a === node || e.b === node) continue;
+    const dx = e.b.p.x - e.a.p.x, dz = e.b.p.z - e.a.p.z, len2 = dx * dx + dz * dz || 1;
+    const t = ((node.p.x - e.a.p.x) * dx + (node.p.z - e.a.p.z) * dz) / len2;
+    if (t <= 0 || t >= 1 || Math.hypot(e.a.p.x + dx * t - node.p.x, e.a.p.z + dz * t - node.p.z) > .6) continue;
+    net.edges.splice(net.edges.indexOf(e), 1, {a: e.a, b: node}, {a: node, b: e.b});
+  }
+}
+function drawLevel() {
+  const shown = levels.filter(l => l.root.visible);
+  if (shown.length !== 1) { status('Show just one level to draw on — use the level tabs below the map.'); return null; }
+  return shown[0];
+}
+function routeClick(e) {
+  const level = drawLevel(); if (!level) return;
+  const c = canvasXY(e), pick = pickPoint(level, c);
+  if (!pick) return;
+  if (route.erase) {
+    if (pick.node) { pushUndo(); net.nodes.delete(pick.node.id); net.edges = net.edges.filter(x => x.a !== pick.node && x.b !== pick.node); }
+    else if (pick.edge) { pushUndo(); net.edges.splice(net.edges.indexOf(pick.edge), 1); }
+    else return;
+    route.from = null; hidePreview(); changed(); return;
+  }
+  pushUndo();
+  let node = pick.node;
+  if (!node) {
+    node = {id: 'n' + net.next++, level, p: pick.p};
+    net.nodes.set(node.id, node); splitLinesAt(node);
+  }
+  if (route.from && route.from.level === level) addEdge(route.from, node);
+  route.from = node;
+  changed();
+}
+function hidePreview() { if (route.preview) route.preview.visible = false; }
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!route.draw || route.erase || !route.from || !route.from.level.root.visible) { hidePreview(); return; }
+  const level = route.from.level, pick = pickPoint(level, canvasXY(e));
+  if (!pick) return;
+  if (!route.preview) route.preview = piece(CYL, MAT.preview, level.root);
+  if (route.preview.parent !== level.root) level.root.add(route.preview);
+  route.preview.visible = true;
+  placeCyl(route.preview, route.from.p, pick.node ? pick.node.p : pick.p, R_NET * .8);
+});
+function setDraw(on) {
+  route.draw = on; route.from = null; hidePreview();
+  if (!on) route.erase = false;
+  document.body.classList.toggle('route-draw', on);
+  renderer.domElement.style.cursor = on ? 'crosshair' : '';
+  if (on) { stopPick(); deselect(); clearPath(); }
+  const banner = $('route-banner') || Object.assign(document.createElement('div'), {id: 'route-banner'});
+  banner.textContent = 'Drawing routes · click along the corridors · Enter or Esc ends a line · Ctrl+Z undoes';
+  if (on) document.body.append(banner); else banner.remove();
+  drawNet();
+  status(on ? 'Draw routes is on: click along the corridors of the level on show.' : '');
+}
+$('route-draw').onclick = () => setDraw(!route.draw);
+$('route-erase').onclick = () => { route.erase = !route.erase; route.from = null; hidePreview(); routeButtons(); };
+function undoRoute() {
+  const snap = route.undo.pop(); if (!snap) return;
+  loadNet(snap); route.from = null; hidePreview(); clearPath(); persist();
+}
+$('route-undo').onclick = undoRoute;
+$('route-clear').onclick = () => {
+  const level = drawLevel(); if (!level) return;
+  pushUndo();
+  for (const n of [...net.nodes.values()]) if (n.level === level) net.nodes.delete(n.id);
+  net.edges = net.edges.filter(x => net.nodes.has(x.a.id) && net.nodes.has(x.b.id));
+  route.from = null; hidePreview(); changed();
+};
+document.addEventListener('keydown', e => {
+  if (!route.draw || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if (e.key === 'Enter' || e.key === 'Escape') { route.from = null; hidePreview(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undoRoute(); }
+});
+
+// ----- finding a route -----
+// A venue's spot on the network: the point of a line nearest its linked blocks (or its label, if it has none).
+function venueBox(label) {
+  const level = label.level, box = new THREE.Box3();
+  level.root.updateMatrixWorld(true);
+  for (const id of label.blocks) for (const m of findBlock(level, id)) box.union(new THREE.Box3().setFromObject(m));
+  const a = label.anchor.position;
+  if (box.isEmpty()) return {minx: a.x, maxx: a.x, minz: a.z, maxz: a.z, cx: a.x, cz: a.z};
+  const pts = [];
+  for (const x of [box.min.x, box.max.x]) for (const z of [box.min.z, box.max.z]) pts.push(level.root.worldToLocal(new V3(x, box.min.y, z)));
+  const xs = pts.map(p => p.x), zs = pts.map(p => p.z);
+  const r = {minx: Math.min(...xs), maxx: Math.max(...xs), minz: Math.min(...zs), maxz: Math.max(...zs)};
+  return {...r, cx: (r.minx + r.maxx) / 2, cz: (r.minz + r.maxz) / 2};
+}
+
+function findRoute(from, to) {
+  if (!net.edges.length) return {error: 'No routes have been drawn yet. Turn on “Draw routes” in the Arrange Levels panel first.'};
+  const nodes = new Map(), edges = net.edges.map(e => [e.a.id, e.b.id]);
+  for (const n of net.nodes.values()) nodes.set(n.id, {level: n.level, p: n.p});
+  let tmp = 0;
+  const attach = label => {
+    const level = label.level, box = venueBox(label);
+    let best = null;
+    edges.forEach((e, i) => {
+      const a = nodes.get(e[0]), b = nodes.get(e[1]);
+      if (a.level !== level) return;
+      const n = Math.max(2, Math.ceil(a.p.distanceTo(b.p)));
+      for (let k = 0; k <= n; k++) {
+        const t = k / n, x = a.p.x + (b.p.x - a.p.x) * t, z = a.p.z + (b.p.z - a.p.z) * t;
+        const score = Math.hypot(Math.max(box.minx - x, 0, x - box.maxx), Math.max(box.minz - z, 0, z - box.maxz)) + .001 * Math.hypot(x - box.cx, z - box.cz);
+        if (!best || score < best.score) best = {score, i, t};
+      }
+    });
+    if (!best) return null;
+    const [ea, eb] = edges[best.i];
+    if (best.t < 1e-6) return ea;
+    if (best.t > 1 - 1e-6) return eb;
+    const id = '~' + ++tmp, a = nodes.get(ea), b = nodes.get(eb);
+    nodes.set(id, {level, p: a.p.clone().lerp(b.p, best.t)});
+    edges.splice(best.i, 1, [ea, id], [id, eb]);
+    return id;
+  };
+  const srcOf = new Map(), dstOf = new Map();
+  for (const l of from.labels) { const id = attach(l); if (id) srcOf.set(id, l); }
+  for (const l of to.labels) { const id = attach(l); if (id) dstOf.set(id, l); }
+  if (!srcOf.size || !dstOf.size) {
+    const bad = (!srcOf.size ? from : to).labels[0].level;
+    return {error: `No route has been drawn on ${levelTitle(bad)} yet.`};
+  }
+  const adj = new Map([...nodes.keys()].map(k => [k, []]));
+  for (const [a, b] of edges) { const w = nodes.get(a).p.distanceTo(nodes.get(b).p); adj.get(a).push({to: b, w}); adj.get(b).push({to: a, w}); }
+  // staircases: each one sits on a route point; it is joined to the closest staircase on the level above and below
+  const portal = new Map();
+  for (const l of labels) {
+    if (l.icon !== 'stairs') continue;
+    let best = null, bd = PORTAL_RANGE;
+    for (const [id, n] of nodes) if (n.level === l.level) { const d = Math.hypot(n.p.x - l.anchor.position.x, n.p.z - l.anchor.position.z); if (d < bd) { bd = d; best = id; } }
+    if (best) portal.set(l, best);
+  }
+  const byNum = new Map(levels.map(l => [levelNumber(l), l]));
+  for (const [num, lower] of byNum) {
+    const upper = byNum.get(num + 1); if (!upper) continue;
+    const pairs = [];
+    for (const [a, na] of portal) if (a.level === lower) for (const [b, nb] of portal) if (b.level === upper) {
+      const d = Math.hypot(a.anchor.position.x - b.anchor.position.x, a.anchor.position.z - b.anchor.position.z);
+      if (d <= STAIR_MATCH) pairs.push({d, na, nb});
+    }
+    const usedA = new Set(), usedB = new Set();
+    for (const p of pairs.sort((x, y) => x.d - y.d)) {
+      if (usedA.has(p.na) || usedB.has(p.nb)) continue;
+      usedA.add(p.na); usedB.add(p.nb);
+      adj.get(p.na).push({to: p.nb, w: STAIR_COST}); adj.get(p.nb).push({to: p.na, w: STAIR_COST});
+    }
+  }
+  // shortest path (Dijkstra) from any of the origin's spots to any of the destination's spots
+  const dist = new Map(), prev = new Map(), done = new Set();
+  for (const s of srcOf.keys()) dist.set(s, 0);
+  let end = null;
+  for (;;) {
+    let u = null, ud = Infinity;
+    for (const [k, d] of dist) if (!done.has(k) && d < ud) { u = k; ud = d; }
+    if (u === null) break;
+    if (dstOf.has(u)) { end = u; break; }
+    done.add(u);
+    for (const {to, w} of adj.get(u)) if (ud + w < (dist.get(to) ?? Infinity)) { dist.set(to, ud + w); prev.set(to, u); }
+  }
+  if (end === null) return {error: 'No connected route was found between them. Check that the routes on each level join up, and that each staircase sits on a route point.'};
+  const ids = [end];
+  while (prev.has(ids[0])) ids.unshift(prev.get(ids[0]));
+  const segs = [], steps = [];
+  const startLabel = srcOf.get(ids[0]), endLabel = dstOf.get(end);
+  steps.push(`Start at ${from.name} (${levelTitle(startLabel.level)})`);
+  ids.forEach((id, i) => {
+    const n = nodes.get(id), last = segs[segs.length - 1];
+    if (!last || last.level !== n.level) {
+      if (last) steps.push(`Take the stairs ${levelNumber(n.level) > levelNumber(last.level) ? 'up' : 'down'} to ${levelTitle(n.level)}`);
+      segs.push({level: n.level, pts: []});
+    }
+    const s = segs[segs.length - 1];
+    if (!s.pts.length || s.pts[s.pts.length - 1].distanceTo(n.p) > 1e-4) s.pts.push(n.p.clone());
+  });
+  steps.push(`Arrive at ${to.name} (${levelTitle(endLabel.level)})`);
+  return {segs, steps, dest: endLabel, length: dist.get(end)};
+}
+
+// ----- showing the route -----
+let routeToken = 0;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function clearPath() {
+  routeToken++;
+  for (const l of levels) l.pathGroup?.clear();
+  $('route-clear-path').hidden = true;
+}
+async function playRoute(res) {
+  const my = ++routeToken;
+  for (const l of levels) l.pathGroup?.clear();
+  for (const s of res.segs) {
+    const g = group(s.level, 'pathGroup');
+    s.pieces = []; s.joints = []; s.total = 0;
+    const cum = [0];
+    s.pts.forEach((p, i) => { if (i) cum.push(cum[i - 1] + p.distanceTo(s.pts[i - 1])); });
+    s.total = cum[cum.length - 1];
+    const at = d => {   // point at distance d along the path
+      let i = 1; while (i < cum.length - 1 && cum[i] < d) i++;
+      return s.pts[i - 1].clone().lerp(s.pts[i], (d - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1));
+    };
+    for (let d0 = 0; d0 < s.total - 1e-4; d0 += DASH + GAP) {
+      const d1 = Math.min(d0 + DASH, s.total);
+      const knots = [d0, ...cum.filter(c => c > d0 + 1e-4 && c < d1 - 1e-4), d1];   // a dash that turns a corner bends with it
+      for (let k = 1; k < knots.length; k++) {
+        const m = piece(CYL, MAT.path, g); m.visible = false;
+        s.pieces.push({m, a: at(knots[k - 1]), b: at(knots[k]), len: knots[k] - knots[k - 1], start: knots[k - 1]});
+      }
+    }
+  }
+  const first = res.segs[0], lastSeg = res.segs[res.segs.length - 1];
+  ball(group(first.level, 'pathGroup'), MAT.start, first.pts[0], R_PATH * 2.2);
+  const endBall = ball(group(lastSeg.level, 'pathGroup'), MAT.end, lastSeg.pts[lastSeg.pts.length - 1], R_PATH * 2.6); endBall.visible = false;
+  $('route-clear-path').hidden = false;
+  const reveal = (s, k) => {
+    const cur = k * s.total;
+    for (const p of s.pieces) {
+      const t = Math.min(1, Math.max(0, (cur - p.start) / (p.len || 1)));
+      p.m.visible = t > 0 && p.len > 1e-4;
+      if (p.m.visible) placeCyl(p.m, p.a, p.a.clone().lerp(p.b, t), R_PATH);
+    }
+  };
+  for (const s of res.segs) {
+    if (levels.filter(l => l.root.visible).length !== 1 || !s.level.root.visible) { if (!await viewLevel(s.level)) return; }
+    if (my !== routeToken) return;
+    await tween(Math.min(2400, 500 + s.total * 30), k => reveal(s, k));
+    if (my !== routeToken) return;
+    reveal(s, 1);
+    if (s !== lastSeg) await sleep(500);
+    if (my !== routeToken) return;
+  }
+  endBall.visible = true;
+  select('label', res.dest); handles.detach();   // the destination's linked blocks turn red
+}
+
+// ----- the Find venue panel -----
+let venues = [], venueSig = '';
+function refreshVenues() {
+  const map = new Map();
+  for (const l of labels) {
+    if (l.icon || isHidden(l.level)) continue;
+    const name = oneLine(l.text);
+    if (!name || /^level\b/i.test(name)) continue;   // levels are not venues
+    if (!map.has(name)) map.set(name, {name, labels: []});
+    map.get(name).labels.push(l);
+  }
+  venues = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'}));
+  const sig = venues.map(v => v.name + '@' + v.labels.map(l => l.level.id)).join('|');
+  if (sig === venueSig) return;
+  venueSig = sig;
+  for (const [id, ph] of [['route-from', 'Choose your origin…'], ['route-to', 'Choose your destination…']]) {
+    const sel = $(id), keep = sel.value;
+    sel.replaceChildren(new Option(ph, ''), ...venues.map(v => new Option(`${v.name} · ${[...new Set(v.labels.map(l => levelTitle(l.level)))].join(', ')}`, v.name)));
+    sel.value = venues.some(v => v.name === keep) ? keep : '';
+  }
+}
+function routeMsg(text, err) { const m = $('route-msg'); m.textContent = text; m.classList.toggle('err', !!err); }
+async function runRoute() {
+  const from = venues.find(v => v.name === $('route-from').value), to = venues.find(v => v.name === $('route-to').value);
+  clearPath(); $('route-steps').replaceChildren();
+  if (!from || !to) { routeMsg(''); return; }
+  if (from === to) { routeMsg('Your origin and destination are the same place.', true); return; }
+  if (route.draw) setDraw(false);
+  const res = findRoute(from, to);
+  if (res.error) { routeMsg(res.error, true); return; }
+  routeMsg(res.segs.length > 1 ? `Route found across ${res.segs.length} levels.` : 'Route found.');
+  $('route-steps').replaceChildren(...res.steps.map(t => Object.assign(document.createElement('li'), {textContent: t})));
+  window.dispatchEvent(new Event('route-found'));   // on a phone this slides the Find venue menu away so the route can be seen
+  await playRoute(res);
+}
+$('route-from').onchange = $('route-to').onchange = runRoute;
+$('route-swap').onclick = () => { const f = $('route-from').value; $('route-from').value = $('route-to').value; $('route-to').value = f; runRoute(); };
+$('route-clear-path').onclick = () => { clearPath(); $('route-steps').replaceChildren(); routeMsg(''); $('route-from').value = $('route-to').value = ''; deselect(); };
+
+function animate() {
+  requestAnimationFrame(animate);
+  tickTweens();
+  orbit.update();
+  renderer.render(scene, camera);
+  const dist = camera.position.distanceTo(orbit.target);
+  const zoomText = `Zoom distance: <b>${dist.toFixed(1)}</b> units` + (fitDistance ? ` · ${(fitDistance / dist).toFixed(2)}× Fit view` : '');
+  if (zoomText !== lastZoomText) { $('zoom').innerHTML = zoomText; lastZoomText = zoomText; }
+  // view angles relative to the default view: tilt (X) is positive when looking down more steeply
+  const eu = viewEuler.setFromQuaternion(camera.quaternion, 'YXZ');
+  const wrap = a => { a = THREE.MathUtils.radToDeg(a); return a > 180 ? a - 360 : a < -180 ? a + 360 : a; };
+  const fmt = a => (Math.abs(a) < .05 ? 0 : a).toFixed(1);
+  // view shift (Shift + drag): how far the point being looked at has moved from the default view, along the model's X, Y and Z
+  const shift = orbit.target.clone().sub(defaultTarget);
+  const angles = [fmt(-wrap(eu.x - defaultEuler.x)), fmt(wrap(eu.y - defaultEuler.y)), fmt(wrap(eu.z - defaultEuler.z)), fmt(shift.x), fmt(shift.y), fmt(shift.z)].join('|');
+  if (angles !== lastAngles) {
+    lastAngles = angles;
+    ['angle-x', 'angle-y', 'angle-z', 'shift-x', 'shift-y', 'shift-z'].forEach((id, i) => { $(id).value = angles.split('|')[i]; });
+  }
+  const p = new V3();
+  for (const l of labels) {
+    l.anchor.getWorldPosition(p).project(camera);
+    const show = l.visible && l.level.root.visible && p.z >= -1 && p.z <= 1;
+    l.el.style.display = show ? '' : 'none';   // '' keeps the stylesheet's layout (icon markers are flex columns)
+    const fade = l.level.labelFade ?? 1;
+    if (l.shownFade !== fade) { l.el.style.opacity = fade; l.shownFade = fade; }
+    l.el.style.left = `${(p.x * .5 + .5) * host.clientWidth}px`;
+    l.el.style.top = `${(-p.y * .5 + .5) * host.clientHeight}px`;
+  }
+}
+
+window.campus = {levels, labels, camera, findRoute, venues: () => venues, net};
+resize();
+animate();
+init().catch(err => { status(`Could not load the models: ${err.message}. Start this project using START.cmd.`); console.error(err); });
+</script>
+</body>
+</html>
