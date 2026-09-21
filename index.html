@@ -4307,6 +4307,13 @@ G4 Heritage Room - Heritage Room`
           ...res.segs.filter((s) => s !== lastSeg).map((s) => s.badge),
           endBall,
         ];
+        // phone sheet: when the route climbs a staircase, the same number is repeated where the visitor arrives on the next level
+        res.segs.forEach((s, i) => {
+          if (!i) return;
+          const twin = badge(group(s.level, "pathGroup"), i + 1, "#e11d1d", s.pts[0]);
+          twin.visible = false;
+          (res.stepBadges[i].userData.twins ||= []).push(twin);
+        });
         $("route-clear-path").hidden = false;
         const reveal = (s, k) => {
           const cur = k * s.total;
@@ -4317,10 +4324,14 @@ G4 Heritage Room - Heritage Room`
               placeCyl(p.m, p.a, p.a.clone().lerp(p.b, t), R_PATH);
           }
         };
+        res.reveal = reveal;
         if (instant) {
-          // phone: the whole route on every level at once, no animation
+          // phone: the whole route on every level at once; the steps then draw their own stretch slowly (see selectStep)
           for (const s of res.segs) reveal(s, 1);
-          for (const b of res.stepBadges) b.visible = true;
+          for (const b of res.stepBadges) {
+            b.visible = true;
+            for (const t of b.userData.twins || []) t.visible = true;
+          }
           window.dispatchEvent(new CustomEvent("route-drawn", { detail: res }));
           select("label", res.dest);
           handles.detach();
@@ -4659,11 +4670,33 @@ G4 Heritage Room - Heritage Room`
         const li = [...$("route-steps").children];
         li.forEach((el, i) => el.classList.toggle("on", i === stepSel));
         sheetRes?.stepBadges?.forEach((b, i) => {
-          b.userData.paint(i === stepSel ? STEP_GREEN : STEP_RED);
-          b.userData.grow = i === stepSel ? 1.35 : 1; // the selected step's badge is larger on the map too
+          for (const x of [b, ...(b.userData.twins || [])]) {
+            x.userData.paint(i === stepSel ? STEP_GREEN : STEP_RED);
+            x.userData.grow = i === stepSel ? 1.35 : 1; // the selected step's badge is larger on the map too
+          }
         });
         sizeBadges();
         $("sheet-overview").classList.toggle("on", stepSel < 0);
+      }
+      let drawToken = 0;
+      function drawStretch(seg) {
+        const res = sheetRes,
+          my = ++drawToken;
+        if (!res?.reveal) return;
+        for (const s of res.segs) res.reveal(s, 1);
+        if (!seg) return;
+        const ms = 1800,
+          delay = 350; // lets the camera settle on the step first
+        res.reveal(seg, 0);
+        let t0 = 0;
+        const tick = (now) => {
+          if (my !== drawToken || sheetRes !== res) return;
+          t0 ||= now + delay;
+          const k = Math.min(1, Math.max(0, (now - t0) / ms));
+          res.reveal(seg, k * k * (3 - 2 * k)); // eases in and out
+          if (k < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
       }
       function selectStep(i) {
         if (!sheetRes) return;
@@ -4671,6 +4704,8 @@ G4 Heritage Room - Heritage Room`
         stepSel = i;
         showLevelsNow([sheetRes.segs[Math.max(0, Math.min(i - 1, n - 1))].level]);
         paintSteps();
+        // the stretch of red dots that leads into this step is drawn slowly, so the visitor sees which way to walk
+        drawStretch(i >= 1 ? sheetRes.segs[Math.min(i - 1, n - 1)] : null);
         if (sheetH > sheetSnaps().half + 40) setSheet(sheetSnaps().half);
         else focusStep(i);
       }
@@ -4723,6 +4758,7 @@ G4 Heritage Room - Heritage Room`
       function showOverview() {
         stepSel = -1;
         zoomToken++;
+        drawStretch(null); // the whole route is drawn again
         showLevelsNow(shownLevels());
         paintSteps();
       }
