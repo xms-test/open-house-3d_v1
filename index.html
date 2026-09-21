@@ -4017,7 +4017,8 @@ G4 Heritage Room - Heritage Room`
       }
 
       // ----- showing the route -----
-      let routeToken = 0;
+      let routeToken = 0,
+        routeZoomedTo = 0; // camera distance after the last little zoom-in, so it doesn't stack
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       function clearPath() {
         routeToken++;
@@ -4367,12 +4368,24 @@ G4 Heritage Room - Heritage Room`
           ),
         );
         if (matchMedia("(max-width:800px)").matches) {
-          // phone: let the chosen places show for half a second before the menu slides away and the route is drawn
+          // phone: the menu slides away, the map eases in a little if it is still at the default view, then hold for a second before the route is drawn
           const mine = routeToken;
-          await sleep(500);
+          window.dispatchEvent(new Event("route-found"));
+          if (!userMoved) {
+            const tgt = orbit.target.clone(),
+              off = camera.position.clone().sub(tgt);
+            if (Math.abs(off.length() - routeZoomedTo) > 0.01) {
+              await tween(600, (k) =>
+                camera.position
+                  .copy(tgt)
+                  .addScaledVector(off, 1 - 0.15 * easeOutCubic(k)),
+              );
+              routeZoomedTo = camera.position.distanceTo(tgt);
+            }
+          }
+          await sleep(1000);
           if (mine !== routeToken) return; // the choice changed meanwhile
-        }
-        window.dispatchEvent(new Event("route-found")); // on a phone this slides the Find venue menu away so the route can be seen
+        } else window.dispatchEvent(new Event("route-found"));
         await playRoute(res);
       }
       $("route-from").onchange = $("route-to").onchange = runRoute;
