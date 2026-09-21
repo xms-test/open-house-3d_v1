@@ -883,7 +883,7 @@
       ],
       "visible": true,
       "icon": "money",
-      "size": 1.4
+      "size": 0.9
     },
     {
       "text": "",
@@ -895,7 +895,7 @@
       ],
       "visible": true,
       "icon": "firstaid",
-      "size": 1.4
+      "size": 0.9
     },
     {
       "text": "",
@@ -907,7 +907,7 @@
       ],
       "visible": true,
       "icon": "info",
-      "size": 1.4
+      "size": 0.9
     },
     {
       "text": "Refreshment",
