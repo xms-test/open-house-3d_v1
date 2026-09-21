@@ -657,7 +657,11 @@
           visibility 0s;
       }
       /* ---- Phone layout (max-width 800px): Google-Maps style. Wider screens keep the desktop layout above. ---- */
-      #venue-close {
+      #venue-close,
+      .sheet-only {
+        display: none;
+      }
+      #route-steps .num {
         display: none;
       }
       @media (max-width: 800px) {
@@ -852,6 +856,149 @@
           background: #f1f4f5;
           border-color: #f1f4f5;
         }
+        /* ---- Directions sheet: once a route is found the full-screen menu becomes a Google-Maps style bottom sheet ---- */
+        body.dir-sheet #side {
+          inset: auto 0 0 0;
+          height: var(--sheet-h, 50dvh);
+          z-index: 70;
+          background: #fff;
+          border-radius: 18px 18px 0 0;
+          box-shadow: 0 -4px 20px #0003;
+          overflow: hidden;
+          transition:
+            height 0.25s ease,
+            transform 0.3s ease,
+            visibility 0s;
+        }
+        body.dir-sheet.sheet-drag #side {
+          transition: none;
+        }
+        body.dir-sheet #level-tabs {
+          bottom: calc(var(--sheet-h, 50dvh) + 8px);
+          z-index: 75;
+          transition: bottom 0.25s ease;
+        }
+        body.dir-sheet.sheet-drag #level-tabs {
+          transition: none;
+        }
+        body.dir-sheet.sheet-full #level-tabs {
+          display: none;
+        }
+        body.dir-sheet #panel-venue {
+          display: flex;
+          flex-direction: column;
+          padding: 0;
+          overflow: hidden;
+        }
+        body.dir-sheet #panel-venue .field,
+        body.dir-sheet #panel-venue .swap-row,
+        body.dir-sheet #route-msg,
+        body.dir-sheet #route-clear-path {
+          display: none;
+        }
+        body.dir-sheet .sheet-only {
+          display: flex;
+        }
+        #sheet-handle {
+          justify-content: center;
+          padding: 9px 0 4px;
+          cursor: grab;
+          touch-action: none;
+          flex: none;
+        }
+        #sheet-handle span {
+          width: 40px;
+          height: 5px;
+          border-radius: 3px;
+          background: #c5ccd0;
+        }
+        #sheet-head {
+          align-items: center;
+          gap: 10px;
+          padding: 4px 58px 12px 12px;
+          border-bottom: 1px solid #e1e7ea;
+          touch-action: none;
+          flex: none;
+        }
+        #sheet-back {
+          flex: none;
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          border-radius: 50%;
+          font-size: 22px;
+          line-height: 1;
+          background: #f1f4f5;
+          border-color: #f1f4f5;
+        }
+        #sheet-title {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        #sheet-title b {
+          font-size: 15px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        #sheet-title small {
+          font-size: 12px;
+          color: #5b6b74;
+        }
+        body.dir-sheet #venue-close {
+          top: 26px;
+          right: 12px;
+          z-index: 2;
+        }
+        #sheet-tools {
+          padding: 8px 12px;
+          gap: 8px;
+          flex: none;
+          border-bottom: 1px solid #e1e7ea;
+        }
+        #sheet-tools button.on {
+          background: #176b65;
+          border-color: #176b65;
+          color: #fff;
+        }
+        body.dir-sheet #route-steps {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          margin: 0;
+          padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+          list-style: none;
+          font-size: 15px;
+          line-height: 1.35;
+          color: #1f2d35;
+        }
+        body.dir-sheet #route-steps li {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 16px 16px;
+          border-bottom: 1px solid #dfe5e8;
+          cursor: pointer;
+        }
+        body.dir-sheet #route-steps li.on {
+          background: #eaf7ef;
+        }
+        body.dir-sheet #route-steps .num {
+          display: grid;
+          place-items: center;
+          flex: none;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: #e11d1d;
+          color: #fff;
+          font: 700 15px/1 sans-serif;
+          transition: background 0.2s;
+        }
+        body.dir-sheet #route-steps li.on .num {
+          background: #1f9d55;
+        }
       }
           /* view-only mode (see VIEW_ONLY in the script) */
       .view-only .level-label,
@@ -936,7 +1083,7 @@
           data-panel="venue"
           aria-pressed="true"
         >
-          Get Directions
+          Getting Around
         </button>
       </nav>
     </header>
@@ -1082,7 +1229,7 @@
             Turn on Draw routes, show one level, then click along its corridors.
             Points snap to staircases and to earlier points; click a line to
             start a branch. Enter or Esc ends a line. Visitors use these routes
-            in “Get Directions”.
+            in “Getting Around”.
           </p>
 
           <fieldset id="editor" disabled>
@@ -1201,9 +1348,26 @@
           <p class="footnote">Your original GLB files remain unchanged.</p>
         </aside>
         <aside id="panel-venue" class="side-panel open">
-          <button type="button" id="venue-close" aria-label="Close Get Directions">
+          <button type="button" id="venue-close" aria-label="Close Getting Around">
             ×
           </button>
+          <div id="sheet-handle" class="sheet-only" aria-hidden="true">
+            <span></span>
+          </div>
+          <div id="sheet-head" class="sheet-only">
+            <button type="button" id="sheet-back" aria-label="Change origin or destination">
+              ‹
+            </button>
+            <div id="sheet-title">
+              <b id="sheet-summary"></b>
+              <small id="sheet-sub"></small>
+            </div>
+          </div>
+          <div id="sheet-tools" class="sheet-only">
+            <button type="button" id="sheet-overview" class="small on">
+              All levels
+            </button>
+          </div>
           <div class="field">
             <label for="route-from-q">From (origin)</label>
             <div class="combo" data-for="route-from"></div>
@@ -1273,9 +1437,6 @@
                   : "tab-arrange",
               )
               .click();
-        });
-        window.addEventListener("route-found", () => {
-          if (mq.matches) setVenue(false);
         });
         if (mq.matches) setVenue(false);
       }
@@ -1551,9 +1712,15 @@ const handles = new TransformControls(camera, renderer.domElement);
         VIEWS[/(\d+)/.exec(level.name)?.[1]] || VIEWS.default;
       const defaultEuler = new THREE.Euler(); // camera orientation of the default view, so the side panel can show angles relative to it
       const defaultTarget = new V3(); // the point the default view looks at, so the side panel can show how far Shift+drag has moved the view
+      let sheetH = 0; // height of the directions sheet in px (0 = no sheet)
       const phoneInsets = () =>
         matchMedia("(max-width:800px)").matches
-          ? { top: 70, bottom: 120 }
+          ? {
+              top: 70,
+              bottom: sheetH
+                ? Math.min(sheetH, innerHeight * 0.5) + 46
+                : 120,
+            }
           : null;
       function resize() {
         const w = host.clientWidth,
@@ -3383,19 +3550,24 @@ G4 Heritage Room - Heritage Room`
         const c = document.createElement("canvas");
         c.width = c.height = 128;
         const g = c.getContext("2d");
-        g.beginPath();
-        g.arc(64, 64, 58, 0, Math.PI * 2);
-        g.fillStyle = color;
-        g.fill();
-        g.lineWidth = 8;
-        g.strokeStyle = "#fff";
-        g.stroke();
-        g.fillStyle = "#fff";
-        g.font = "bold 72px Inter, Arial, sans-serif";
-        g.textAlign = "center";
-        g.textBaseline = "middle";
-        g.fillText(String(num), 64, 68);
         const tex = new THREE.CanvasTexture(c);
+        const paint = (fill) => {
+          g.clearRect(0, 0, 128, 128);
+          g.beginPath();
+          g.arc(64, 64, 58, 0, Math.PI * 2);
+          g.fillStyle = fill;
+          g.fill();
+          g.lineWidth = 8;
+          g.strokeStyle = "#fff";
+          g.stroke();
+          g.fillStyle = "#fff";
+          g.font = "bold 72px Inter, Arial, sans-serif";
+          g.textAlign = "center";
+          g.textBaseline = "middle";
+          g.fillText(String(num), 64, 68);
+          tex.needsUpdate = true;
+        };
+        paint(color);
         tex.colorSpace = THREE.SRGBColorSpace;
         const s = new THREE.Sprite(
           new THREE.SpriteMaterial({
@@ -3407,6 +3579,7 @@ G4 Heritage Room - Heritage Room`
           }),
         );
         s.userData.route = true;
+        s.userData.paint = paint; // recolour the badge (the selected step turns green)
         s.renderOrder = 1000;
         s.raycast = () => {};
         s.center.set(-0.6, -0.6); // sits up and to the right of the route point so the icon and its label don't cover it
@@ -4013,7 +4186,14 @@ G4 Heritage Room - Heritage Room`
             s.pts.push(n.p.clone());
         });
         steps.push(`Arrive at ${to.name} (${levelTitle(endLabel.level)})`);
-        return { segs, steps, dest: endLabel, length: dist.get(end) };
+        return {
+          segs,
+          steps,
+          dest: endLabel,
+          length: dist.get(end),
+          from: from.name,
+          to: to.name,
+        };
       }
 
       // ----- showing the route -----
@@ -4025,7 +4205,7 @@ G4 Heritage Room - Heritage Room`
         for (const l of levels) l.pathGroup?.clear();
         $("route-clear-path").hidden = true;
       }
-      async function playRoute(res) {
+      async function playRoute(res, instant) {
         const my = ++routeToken;
         for (const l of levels) l.pathGroup?.clear();
         for (const s of res.segs) {
@@ -4069,7 +4249,12 @@ G4 Heritage Room - Heritage Room`
         const first = res.segs[0],
           lastSeg = res.segs[res.segs.length - 1];
         // numbered badges matching the step list: 1 = start, then each staircase, last = arrival
-        badge(group(first.level, "pathGroup"), 1, "#e11d1d", first.pts[0]);
+        const startBadge = badge(
+          group(first.level, "pathGroup"),
+          1,
+          "#e11d1d",
+          first.pts[0],
+        );
         res.segs.forEach((s, i) => {
           if (s === lastSeg) return;
           s.badge = badge(
@@ -4087,6 +4272,12 @@ G4 Heritage Room - Heritage Room`
           lastSeg.pts[lastSeg.pts.length - 1],
         );
         endBall.visible = false;
+        // badges in step order: 1 = start, then each staircase, last = arrival (the sheet's steps use these)
+        res.stepBadges = [
+          startBadge,
+          ...res.segs.filter((s) => s !== lastSeg).map((s) => s.badge),
+          endBall,
+        ];
         $("route-clear-path").hidden = false;
         const reveal = (s, k) => {
           const cur = k * s.total;
@@ -4097,6 +4288,15 @@ G4 Heritage Room - Heritage Room`
               placeCyl(p.m, p.a, p.a.clone().lerp(p.b, t), R_PATH);
           }
         };
+        if (instant) {
+          // phone: the whole route on every level at once, no animation
+          for (const s of res.segs) reveal(s, 1);
+          for (const b of res.stepBadges) b.visible = true;
+          window.dispatchEvent(new CustomEvent("route-drawn", { detail: res }));
+          select("label", res.dest);
+          handles.detach();
+          return;
+        }
         for (const s of res.segs) {
           if (
             levels.filter((l) => l.root.visible).length !== 1 ||
@@ -4363,30 +4563,181 @@ G4 Heritage Room - Heritage Room`
             : "Route found.",
         );
         $("route-steps").replaceChildren(
-          ...res.steps.map((t) =>
-            Object.assign(document.createElement("li"), { textContent: t }),
-          ),
+          ...res.steps.map((t, i) => {
+            const li = document.createElement("li");
+            const num = Object.assign(document.createElement("span"), {
+              className: "num",
+              textContent: String(i + 1),
+            });
+            const txt = Object.assign(document.createElement("span"), {
+              className: "txt",
+              textContent: t,
+            });
+            li.append(num, txt);
+            li.onclick = () => phone.matches && selectStep(i);
+            return li;
+          }),
         );
-        if (matchMedia("(max-width:800px)").matches) {
-          // phone: the menu slides away, the map eases in a little if it is still at the default view, then hold for a second before the route is drawn
-          const mine = routeToken;
-          window.dispatchEvent(new Event("route-found"));
-          if (!userMoved) {
-            const tgt = orbit.target.clone(),
-              off = camera.position.clone().sub(tgt);
-            if (Math.abs(off.length() - routeZoomedTo) > 0.01) {
-              await tween(600, (k) =>
-                camera.position
-                  .copy(tgt)
-                  .addScaledVector(off, 1 - 0.15 * easeOutCubic(k)),
-              );
-              routeZoomedTo = camera.position.distanceTo(tgt);
-            }
+        if (phone.matches) {
+          // phone: the menu drops to a half-height sheet, every level shows with the whole route at once
+          enterSheet(res);
+          await playRoute(res, true);
+        } else await playRoute(res);
+      }
+
+      // ----- phone: Google-Maps style directions sheet -----
+      const phone = matchMedia("(max-width:800px)");
+      const STEP_GREEN = "#1f9d55",
+        STEP_RED = "#e11d1d",
+        SHEET_MIN = 108;
+      let sheetRes = null,
+        stepSel = -1,
+        sheetPrevVis = null;
+      const sheetSnaps = () => ({
+        min: SHEET_MIN,
+        half: Math.round(innerHeight * 0.5),
+        full: innerHeight - 72,
+      });
+      function setSheet(h, animate = true) {
+        const s = sheetSnaps();
+        sheetH = Math.round(Math.min(s.full, Math.max(s.min, h)));
+        document.documentElement.style.setProperty("--sheet-h", sheetH + "px");
+        document.body.classList.toggle("sheet-full", sheetH > s.half + 40);
+        if (animate) settleView();
+      }
+      let settleTimer = 0;
+      function settleView() {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(resize, 280); // reframe the map in the space the sheet leaves free
+      }
+      // show exactly these levels at once (no fade / drop animation) and frame them
+      function showLevelsNow(list) {
+        viewToken++;
+        finishTweens();
+        for (const l of levels) {
+          l.root.visible = list.includes(l);
+          if (l.fadeMats) setFade(l, 1);
+          l.labelFade = list.length > 1 ? 0 : 1; // the stacked overview shows just the route, without every label piled on top
+          l.model.position.y = l.modelY;
+        }
+        userMoved = false;
+        fit();
+        refreshEyes();
+      }
+      const shownLevels = () => levels.filter((l) => !isHidden(l));
+      function paintSteps() {
+        const li = [...$("route-steps").children];
+        li.forEach((el, i) => el.classList.toggle("on", i === stepSel));
+        sheetRes?.stepBadges?.forEach((b, i) =>
+          b.userData.paint(i === stepSel ? STEP_GREEN : STEP_RED),
+        );
+        $("sheet-overview").classList.toggle("on", stepSel < 0);
+      }
+      function selectStep(i) {
+        if (!sheetRes) return;
+        const n = sheetRes.segs.length;
+        stepSel = i;
+        showLevelsNow([sheetRes.segs[Math.max(0, Math.min(i - 1, n - 1))].level]);
+        paintSteps();
+        if (sheetH > sheetSnaps().half + 40) setSheet(sheetSnaps().half);
+        else settleView();
+      }
+      function showOverview() {
+        stepSel = -1;
+        showLevelsNow(shownLevels());
+        paintSteps();
+      }
+      function enterSheet(res) {
+        sheetRes = res;
+        stepSel = -1;
+        if (!sheetPrevVis) sheetPrevVis = levels.filter((l) => l.root.visible);
+        $("sheet-summary").textContent = `${res.from} → ${res.to}`;
+        $("sheet-sub").textContent =
+          res.segs.length > 1
+            ? `Route across ${res.segs.length} levels`
+            : "Route found";
+        document.body.classList.add("dir-sheet");
+        setSheet(sheetSnaps().half, false);
+        showLevelsNow(shownLevels());
+        resize();
+        paintSteps();
+      }
+      function exitSheet(restore = true) {
+        document.body.classList.remove("dir-sheet", "sheet-full", "sheet-drag");
+        sheetH = 0;
+        sheetRes = null;
+        stepSel = -1;
+        document.documentElement.style.removeProperty("--sheet-h");
+        if (restore && sheetPrevVis) showLevelsNow(sheetPrevVis);
+        sheetPrevVis = null;
+        resize();
+      }
+      $("sheet-overview").onclick = showOverview;
+      // "‹" goes back to the full-screen origin / destination form (the route stays until they change it)
+      $("sheet-back").onclick = () => {
+        const keep = sheetPrevVis; // so closing the route later still restores the level that was on show before
+        exitSheet(false);
+        sheetPrevVis = keep;
+      };
+      $("venue-close").addEventListener("click", () => {
+        if (!document.body.classList.contains("dir-sheet")) return;
+        $("route-clear-path").click();
+      });
+      phone.addEventListener("change", (e) => {
+        if (!e.matches && document.body.classList.contains("dir-sheet"))
+          exitSheet();
+      });
+      addEventListener("resize", () => {
+        if (sheetH) setSheet(sheetH, false);
+      });
+      // drag the handle or the header to slide the sheet: it snaps to collapsed / half / full; a tap steps through them
+      {
+        let y0 = 0,
+          h0 = 0,
+          moved = false,
+          lastY = 0,
+          vel = 0,
+          drag = false;
+        const grab = (e) => {
+          if (e.target.closest("button")) return;
+          drag = true;
+          moved = false;
+          y0 = lastY = e.clientY;
+          h0 = sheetH;
+          vel = 0;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          document.body.classList.add("sheet-drag");
+        };
+        const move = (e) => {
+          if (!drag) return;
+          if (Math.abs(e.clientY - y0) > 4) moved = true;
+          vel = e.clientY - lastY;
+          lastY = e.clientY;
+          setSheet(h0 + (y0 - e.clientY), false);
+        };
+        const release = () => {
+          if (!drag) return;
+          drag = false;
+          document.body.classList.remove("sheet-drag");
+          const s = sheetSnaps();
+          let target;
+          if (!moved)
+            target = sheetH < s.half - 20 ? s.half : sheetH < s.full - 20 ? s.full : s.half;
+          else {
+            const bias = sheetH - vel * 8; // a flick carries on to the next stop
+            target = [s.min, s.half, s.full].reduce((a, b) =>
+              Math.abs(b - bias) < Math.abs(a - bias) ? b : a,
+            );
           }
-          await sleep(1000);
-          if (mine !== routeToken) return; // the choice changed meanwhile
-        } else window.dispatchEvent(new Event("route-found"));
-        await playRoute(res);
+          setSheet(target);
+        };
+        for (const id of ["sheet-handle", "sheet-head"]) {
+          const el = $(id);
+          el.addEventListener("pointerdown", grab);
+          el.addEventListener("pointermove", move);
+          el.addEventListener("pointerup", release);
+          el.addEventListener("pointercancel", release);
+        }
       }
       $("route-from").onchange = $("route-to").onchange = runRoute;
       $("route-swap").onclick = () => {
@@ -4397,6 +4748,7 @@ G4 Heritage Room - Heritage Room`
       };
       $("route-clear-path").onclick = () => {
         clearPath();
+        exitSheet();
         $("route-steps").replaceChildren();
         routeMsg("");
         $("route-from").value = $("route-to").value = "";
