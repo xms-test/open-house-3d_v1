@@ -4668,9 +4668,15 @@ G4 Heritage Room - Heritage Room`
           off = dir.multiplyScalar(dist),
           t1 = c.clone(),
           p1 = c.clone().add(off);
+        const already = stepDist !== null; // zoomed in before: go straight to the step, no zoom-in animation
         stepDist = dist;
         const my = ++zoomToken;
         userMoved = true; // keeps the zoom when the sheet is resized
+        if (already) {
+          orbit.target.copy(t1);
+          camera.position.copy(p1);
+          return;
+        }
         tween(550, (k) => {
           if (my !== zoomToken) return;
           const e = easeOutCubic(k);
