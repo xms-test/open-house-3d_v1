@@ -1451,6 +1451,7 @@
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       import { TransformControls } from "three/addons/controls/TransformControls.js";
       import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
       // Levels kept in the layout but not offered to visitors (no tab, search hit or venue). Remove an id from this list to bring the level back.
       const HIDDEN_LEVELS = new Set(["upload-level-5", "upload-level-6"]);
@@ -1637,16 +1638,19 @@ const handles = new TransformControls(camera, renderer.domElement);
         persist();
       });
 
-      // Server models are always re-fetched so a replaced GLB shows up on refresh.
+      // Server models are revalidated on every visit (a 304 costs nothing) so a replaced GLB still shows up on refresh.
       const serverLoader = new GLTFLoader();
       serverLoader.setRequestHeader({ "Cache-Control": "no-cache" });
+      serverLoader.setMeshoptDecoder(MeshoptDecoder); // compressed models (level-1.glb)
       const fileLoader = new GLTFLoader();
+      fileLoader.setMeshoptDecoder(MeshoptDecoder);
 
       // ---------- state ----------
       const levels = []; // {id, name, root, base, home, saved, btn}
       const labels = []; // {text, level, anchor, el, visible, row, input}
       let selection = null; // {kind: 'level' | 'label', item}
-      let ready = false;
+      let ready = false,
+        loadingRest = false; // Level 1 is showing; the other levels are still loading in the background
       let counter = 0;
       let fitDistance = 0; // camera distance of the last "Fit all", used as the 1.0x zoom reference
 
@@ -2632,7 +2636,7 @@ const handles = new TransformControls(camera, renderer.domElement);
       }
 
       function persist() {
-        if (!ready) return;
+        if (!ready || loadingRest) return; // never save while only some levels are in
         try {
           localStorage.setItem(KEY, JSON.stringify(state()));
           $("saved").textContent = "✓ Changes saved in this browser.";
@@ -2644,25 +2648,6 @@ const handles = new TransformControls(camera, renderer.domElement);
 
       // GLBs added in the page are kept by server.mjs in models/uploads and listed under "extras" in the layout.
       const UPLOAD_URL = /^models\/uploads\/[\w\-. ]{1,100}\.glb$/i;
-
-      async function loadExtras(data) {
-        validate(data);
-        for (const x of data.extras || []) {
-          if (levels.some((l) => l.id === x.id)) continue;
-          try {
-            const level = build(
-              await serverLoader.loadAsync(`${x.url}?t=${Date.now()}`),
-              x.id,
-              x.name,
-              true,
-            );
-            level.url = x.url;
-          } catch (err) {
-            console.error(err);
-            status(`Could not load added model ${x.name}.`);
-          }
-        }
-      }
 
       function validate(d) {
         const nums = (a, n) =>
@@ -2796,29 +2781,14 @@ const handles = new TransformControls(camera, renderer.domElement);
       }
 
       // ---------- loading ----------
+      function hideLoader() {
+        const loader = $("loader");
+        if (!loader) return;
+        loader.classList.add("done");
+        setTimeout(() => loader.remove(), 400);
+      }
       async function init() {
         status("Loading levels…");
-        const results = await Promise.allSettled(
-          DEFAULTS.map((d) =>
-            serverLoader.loadAsync(`${d.url}?t=${Date.now()}`),
-          ),
-        );
-        const failed = [];
-        results.forEach((r, i) => {
-          const d = DEFAULTS[i];
-          if (r.status !== "fulfilled") {
-            failed.push(d.name);
-            console.error(r.reason);
-            return;
-          }
-          try {
-            addLabel(build(r.value, d.id, d.name, true), d.label);
-          } catch (err) {
-            failed.push(`${d.name} (${err.message})`);
-          }
-        });
-        ready = true;
-        renderLists();
         // layout.json (saved by server.mjs / uploaded with the site) wins over this browser's copy
         let fileLayout = null;
         try {
@@ -2827,25 +2797,79 @@ const handles = new TransformControls(camera, renderer.domElement);
           });
           if (r.ok) fileLayout = await r.json();
         } catch {}
+        let data = null;
         try {
           const saved = fileLayout
             ? JSON.stringify(fileLayout)
             : localStorage.getItem(KEY);
           if (saved) {
-            const data = JSON.parse(saved);
-            await loadExtras(data);
-            restore(data);
+            data = JSON.parse(saved);
+            validate(data);
           }
         } catch {
+          data = null;
           status("Saved layout could not be restored. Using the default.");
         }
-        // Every visit starts on Level 1 only, framed to fit. The other levels stay one click away in the Levels list.
+        // Every level in stacking order: the built-in ones, then the added ones from the layout
+        const sources = [...DEFAULTS];
+        for (const x of data?.extras || [])
+          if (!sources.some((d) => d.id === x.id)) sources.push(x);
+        const order = (id) => sources.findIndex((d) => d.id === id);
         const first =
-          levels.find((l) => /^level[\s_-]*1$/i.test(l.name)) || levels[0];
-        for (const l of levels) l.root.visible = l === first;
+          sources.find((d) => /^level[\s_-]*1$/i.test(d.name)) || sources[0];
+        const failed = [];
+        const add = (src, gltf) => {
+          try {
+            const level = build(gltf, src.id, src.name, true);
+            if (src.label) addLabel(level, src.label);
+            else level.url = src.url;
+            return level;
+          } catch (err) {
+            failed.push(`${src.name} (${err.message})`);
+          }
+        };
+        const fetchLevel = (src) =>
+          serverLoader.loadAsync(src.url).catch((err) => {
+            failed.push(src.name);
+            console.error(err);
+            return null;
+          });
+
+        // 1) Level 1 alone gets the whole connection; as soon as it is in, the map is shown
+        const gltf1 = await fetchLevel(first);
+        if (gltf1) add(first, gltf1);
+        ready = true;
+        loadingRest = true;
+        if (data) restore({ ...data, routes: undefined }); // routes need every level, so they wait
+        for (const l of levels) l.root.visible = true;
+        renderLists();
         refreshEyes();
         updateFields(); // nothing selected on load, so no position handles are shown
         fit();
+        hideLoader();
+        const others = sources.filter((d) => d !== first);
+        if (others.length) status("Loading the other levels…");
+
+        // 2) the rest load in the background and are built in stacking order, so every offset in the layout still lines up
+        const pending = others.map(fetchLevel);
+        for (let i = 0; i < others.length; i++) {
+          const gltf = await pending[i];
+          if (gltf) {
+            const level = add(others[i], gltf);
+            if (level) level.root.visible = false; // stays out of sight until the visitor picks it
+          }
+        }
+        levels.sort((a, b) => order(a.id) - order(b.id));
+        restack();
+        const shown = new Set(levels.filter((l) => l.root.visible));
+        if (data) restore(data);
+        // keep whatever level the visitor is looking at (Level 1 unless they already switched)
+        for (const l of levels) l.root.visible = shown.has(l);
+        renderLists();
+        refreshEyes();
+        updateFields();
+        if (!userMoved) fit();
+        loadingRest = false;
         status(
           failed.length
             ? `Could not load: ${failed.join(", ")}. Start this project using START.cmd.`
@@ -4889,9 +4913,7 @@ G4 Heritage Room - Heritage Room`
         console.error(err);
       }).finally(() => {
         // the levels are in (or loading failed and the message says why): remove the spinner
-        const loader = $("loader");
-        loader.classList.add("done");
-        setTimeout(() => loader.remove(), 400);
+        hideLoader();
       });
     </script>
   </body>
