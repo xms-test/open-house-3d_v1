@@ -51,7 +51,7 @@
         -250.48671357557168
       ],
       "rotation": 0,
-      "visible": true
+      "visible": false
     },
     {
       "id": "upload-level-5",
@@ -81,7 +81,7 @@
         15.025830582276168
       ],
       "rotation": 0,
-      "visible": false
+      "visible": true
     }
   ],
   "labels": [
@@ -669,7 +669,7 @@
       "text": "Bookshop",
       "levelId": "upload-level-1",
       "position": [
-        16.497480358138702,
+        14.83484432575063,
         6.038462433594091,
         33.75047358149799
       ],
@@ -872,6 +872,54 @@
       "visible": true,
       "icon": "stairs",
       "size": 0.8
+    },
+    {
+      "text": "",
+      "levelId": "upload-level-1",
+      "position": [
+        -0.08548999611819941,
+        3.2795474958419817,
+        13.976143185568436
+      ],
+      "visible": true,
+      "icon": "money",
+      "size": 1.4
+    },
+    {
+      "text": "",
+      "levelId": "upload-level-1",
+      "position": [
+        -2.8955480441400496,
+        3.2795474958419817,
+        34.22218671983541
+      ],
+      "visible": true,
+      "icon": "firstaid",
+      "size": 1.4
+    },
+    {
+      "text": "",
+      "levelId": "upload-level-1",
+      "position": [
+        -2.8867263610828147,
+        3.27492017626669,
+        29.17024947123847
+      ],
+      "visible": true,
+      "icon": "info",
+      "size": 1.4
+    },
+    {
+      "text": "Refreshment",
+      "levelId": "upload-level-1",
+      "position": [
+        25.597469107249413,
+        6.038462433594091,
+        31.65392629580348
+      ],
+      "visible": true,
+      "icon": null,
+      "size": 1
     }
   ],
   "routes": {
