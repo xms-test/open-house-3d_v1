@@ -322,9 +322,9 @@ const orbit = new OrbitControls(camera, renderer.domElement);
 orbit.enableDamping = true;
 orbit.maxPolarAngle = Math.PI * .495;
 orbit.maxDistance = Infinity;   // no limit on zooming out
-// Touch screens (deployed page): one finger orbits the map. Two fingers: pinch to zoom (fingers apart = closer, together = further),
+// Touch screens (deployed page): one finger swipes the map (it follows the finger left, right, up or down). Two fingers: pinch to zoom (fingers apart = closer, together = further),
 // twist to turn the map, and drag together to slide it. Handled here so the gestures work the same on every phone.
-orbit.touches = {ONE: THREE.TOUCH.ROTATE, TWO: -1};
+orbit.touches = {ONE: THREE.TOUCH.PAN, TWO: -1};
 for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault());   // iOS Safari page-zoom
 {
   const el = renderer.domElement, fingers = new Map(), UP = new V3(0, 1, 0);
