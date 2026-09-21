@@ -1394,6 +1394,7 @@ const handles = new TransformControls(camera, renderer.domElement);
         $("tab-arrange").hidden = true;
         if (!matchMedia("(max-width:800px)").matches) $("tab-venue").click(); // open Find venue instead
         handles.enabled = false;
+        handles.attach = () => handles; // selecting a level or label never brings the X / Y / Z arrows back
         handles.getHelper().visible = false; // no drag handles
         document.addEventListener(
           "keydown",
