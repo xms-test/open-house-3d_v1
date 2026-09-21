@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
     <title>Open House 2026 directory</title>
     <link rel="stylesheet" href="style.css" />
     <style>
@@ -1005,12 +1008,12 @@
           box-shadow: 0 0 0 3px rgba(31, 157, 85, 0.25);
         }
       }
-          /* view-only mode (see VIEW_ONLY in the script) */
+      /* view-only mode (see VIEW_ONLY in the script) */
       .view-only .level-label,
       .view-only .icon-marker {
         pointer-events: none !important;
       }
-          /* loading spinner: shown until the levels have loaded */
+      /* loading spinner: shown until the levels have loaded */
       #loader {
         position: absolute;
         inset: 0;
@@ -1037,11 +1040,19 @@
           transform: rotate(360deg);
         }
       }
-    /* deploy only */
-.icon-marker .cap{display:none!important}
-.level-label,.icon-marker{pointer-events:none!important}
-#viewport,#viewport *{touch-action:none}
-</style>
+      /* deploy only */
+      .icon-marker .cap {
+        display: none !important;
+      }
+      .level-label,
+      .icon-marker {
+        pointer-events: none !important;
+      }
+      #viewport,
+      #viewport * {
+        touch-action: none;
+      }
+    </style>
     <script type="importmap">
       {
         "imports": {
@@ -1079,10 +1090,13 @@
           type="button"
           id="tab-arrange"
           data-panel="arrange"
-          aria-pressed="false" hidden>
+          aria-pressed="false"
+          hidden
+        >
           Arrange Levels
         </button>
-        <button class="active"
+        <button
+          class="active"
           type="button"
           id="tab-venue"
           data-panel="venue"
@@ -1353,14 +1367,22 @@
           <p class="footnote">Your original GLB files remain unchanged.</p>
         </aside>
         <aside id="panel-venue" class="side-panel open">
-          <button type="button" id="venue-close" aria-label="Close Getting Around">
+          <button
+            type="button"
+            id="venue-close"
+            aria-label="Close Getting Around"
+          >
             ×
           </button>
           <div id="sheet-handle" class="sheet-only" aria-hidden="true">
             <span></span>
           </div>
           <div id="sheet-head" class="sheet-only">
-            <button type="button" id="sheet-back" aria-label="Change origin or destination">
+            <button
+              type="button"
+              id="sheet-back"
+              aria-label="Change origin or destination"
+            >
               ‹
             </button>
             <div id="sheet-title">
@@ -1557,46 +1579,99 @@
       orbit.maxPolarAngle = Math.PI * 0.495;
       orbit.maxDistance = Infinity; // no limit on zooming out
       // Touch screens (deployed page): one finger swipes the map (it follows the finger left, right, up or down). Two fingers: pinch to zoom (fingers apart = closer, together = further),
-// twist to turn the map, and drag together to slide it. Handled here so the gestures work the same on every phone.
-orbit.touches = {ONE: THREE.TOUCH.PAN, TWO: -1};
-orbit.mouseButtons = {LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE};   // a mouse (or a narrow desktop window) swipes the same way; only the right button turns the map
-for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault());   // iOS Safari page-zoom
-{
-  const el = renderer.domElement, fingers = new Map(), UP = new V3(0, 1, 0);
-  let last = null;
-  const pair = () => {
-    const [a, b] = [...fingers.values()];
-    return {ang: Math.atan2(b.y - a.y, b.x - a.x), dist: Math.hypot(b.x - a.x, b.y - a.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2};
-  };
-  el.addEventListener('pointerdown', e => { if (e.pointerType !== 'touch') return; fingers.set(e.pointerId, {x: e.clientX, y: e.clientY}); last = fingers.size === 2 ? pair() : null; });
-  el.addEventListener('pointermove', e => {
-    if (e.pointerType !== 'touch' || !fingers.has(e.pointerId)) return;
-    fingers.set(e.pointerId, {x: e.clientX, y: e.clientY});
-    if (fingers.size !== 2) return;
-    const now = pair();
-    if (last && last.dist > 0 && now.dist > 0) {
-      let d = now.ang - last.ang; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
-      const off = camera.position.clone().sub(orbit.target).applyAxisAngle(UP, d);   // twist: the camera goes round the other way, so the map turns with the fingers
-      const len = THREE.MathUtils.clamp(off.length() * last.dist / now.dist, 5, 5000);   // pinch: fingers apart = closer
-      off.setLength(len);
-      const k = 2 * len * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / el.clientHeight;   // slide: world units per screen pixel
-      const right = new V3().setFromMatrixColumn(camera.matrixWorld, 0), up = new V3().setFromMatrixColumn(camera.matrixWorld, 1);
-      const pan = right.multiplyScalar(-(now.mx - last.mx) * k).add(up.multiplyScalar((now.my - last.my) * k));
-      orbit.target.add(pan); camera.position.copy(orbit.target).add(off);
-      userMoved = true; orbit.update();
-    }
-    last = now;
-  });
-  const lift = e => { if (e.pointerType !== 'touch') return; fingers.delete(e.pointerId); last = null; };
-  el.addEventListener('pointerup', lift); el.addEventListener('pointercancel', lift);
-}
-const handles = new TransformControls(camera, renderer.domElement);
+      // twist to turn the map, and drag together to slide it. Handled here so the gestures work the same on every phone.
+      orbit.touches = { ONE: THREE.TOUCH.PAN, TWO: -1 };
+      orbit.mouseButtons = {
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.ROTATE,
+      }; // a mouse (or a narrow desktop window) swipes the same way; only the right button turns the map
+      for (const ev of ["gesturestart", "gesturechange", "gestureend"])
+        document.addEventListener(ev, (e) => e.preventDefault()); // iOS Safari page-zoom
+      {
+        const el = renderer.domElement,
+          fingers = new Map(),
+          UP = new V3(0, 1, 0);
+        let last = null;
+        const pair = () => {
+          const [a, b] = [...fingers.values()];
+          return {
+            ang: Math.atan2(b.y - a.y, b.x - a.x),
+            dist: Math.hypot(b.x - a.x, b.y - a.y),
+            mx: (a.x + b.x) / 2,
+            my: (a.y + b.y) / 2,
+          };
+        };
+        el.addEventListener("pointerdown", (e) => {
+          if (e.pointerType !== "touch") return;
+          fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          last = fingers.size === 2 ? pair() : null;
+        });
+        el.addEventListener("pointermove", (e) => {
+          if (e.pointerType !== "touch" || !fingers.has(e.pointerId)) return;
+          fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+          if (fingers.size !== 2) return;
+          const now = pair();
+          if (last && last.dist > 0 && now.dist > 0) {
+            let d = now.ang - last.ang;
+            if (d > Math.PI) d -= 2 * Math.PI;
+            else if (d < -Math.PI) d += 2 * Math.PI;
+            const off = camera.position
+              .clone()
+              .sub(orbit.target)
+              .applyAxisAngle(UP, d); // twist: the camera goes round the other way, so the map turns with the fingers
+            const len = THREE.MathUtils.clamp(
+              (off.length() * last.dist) / now.dist,
+              5,
+              5000,
+            ); // pinch: fingers apart = closer
+            off.setLength(len);
+            const k =
+              (2 * len * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) /
+              el.clientHeight; // slide: world units per screen pixel
+            const right = new V3().setFromMatrixColumn(camera.matrixWorld, 0),
+              up = new V3().setFromMatrixColumn(camera.matrixWorld, 1);
+            const pan = right
+              .multiplyScalar(-(now.mx - last.mx) * k)
+              .add(up.multiplyScalar((now.my - last.my) * k));
+            orbit.target.add(pan);
+            camera.position.copy(orbit.target).add(off);
+            userMoved = true;
+            orbit.update();
+          }
+          last = now;
+        });
+        const lift = (e) => {
+          if (e.pointerType !== "touch") return;
+          fingers.delete(e.pointerId);
+          last = null;
+        };
+        el.addEventListener("pointerup", lift);
+        el.addEventListener("pointercancel", lift);
+      }
+      const handles = new TransformControls(camera, renderer.domElement);
       handles.setMode("translate");
       handles.setSize(0.75);
       // deploy only: view only
-      handles.enabled = false; handles.getHelper().visible = false;
-      document.addEventListener('keydown', (e) => { if (!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) e.stopImmediatePropagation(); }, true);
-      for (const ev of ['drop', 'dragover']) window.addEventListener(ev, (e) => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
+      handles.enabled = false;
+      handles.getHelper().visible = false;
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))
+            e.stopImmediatePropagation();
+        },
+        true,
+      );
+      for (const ev of ["drop", "dragover"])
+        window.addEventListener(
+          ev,
+          (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          },
+          true,
+        );
 
       // View-only mode: hides the Arrange Levels menu and stops labels, icons, levels and routes being changed.
       // Set VIEW_ONLY to false to get the editor back.
@@ -1722,9 +1797,7 @@ const handles = new TransformControls(camera, renderer.domElement);
         matchMedia("(max-width:800px)").matches
           ? {
               top: 70,
-              bottom: sheetH
-                ? Math.min(sheetH, innerHeight * 0.5) + 46
-                : 120,
+              bottom: sheetH ? Math.min(sheetH, innerHeight * 0.5) + 46 : 120,
             }
           : null;
       function resize() {
@@ -3340,7 +3413,8 @@ const handles = new TransformControls(camera, renderer.domElement);
         searchActive = -1;
       const oneLine = (s) => s.replace(/\s*\n\s*/g, " ").trim();
       // programmes and activities, each pointing at the map label of the venue to locate
-      const ACTIVITIES = `IP1 English Language & Literature - Mediated Learning Lab
+      const ACTIVITIES =
+        `IP1 English Language & Literature - Mediated Learning Lab
 IP2 Mother Tongue Languages - HMTL Room
 IP3 Humanities - CO:LABs, 1, 2, 3
 IP4 Aesthetics - Library
@@ -3374,15 +3448,21 @@ G1 Info Booth - Foyer
 G2 First Aid - Foyer
 G3 Parent Support Group Booth - Foyer
 G4 Heritage Room - Heritage Room`
-        .split("\n")
-        .map((line) => {
-          const i = line.lastIndexOf(" - ");
-          return { text: line, venue: line.slice(i + 3).trim() };
-        });
+          .split("\n")
+          .map((line) => {
+            const i = line.lastIndexOf(" - ");
+            return { text: line, venue: line.slice(i + 3).trim() };
+          });
       // venue names as written above that differ from the label on the map
-      const VENUE_ALIAS = { "hmtl room": "higher mt room", library: "school library" };
+      const VENUE_ALIAS = {
+        "hmtl room": "higher mt room",
+        library: "school library",
+      };
       const venueKey = (s) => {
-        const k = oneLine(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+        const k = oneLine(s)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
         return VENUE_ALIAS[k] || k;
       };
       function renderSearch() {
@@ -3402,7 +3482,9 @@ G4 Heritage Room - Heritage Room`
             }),
           );
         const acts = ACTIVITIES.flatMap((a) => {
-          const label = rooms.find((l) => venueKey(l.text) === venueKey(a.venue));
+          const label = rooms.find(
+            (l) => venueKey(l.text) === venueKey(a.venue),
+          );
           return label ? [{ name: a.text, label }] : [];
         });
         searchHits = [
@@ -3637,13 +3719,11 @@ G4 Heritage Room - Heritage Room`
       function routeSnapshot(savedOnly) {
         const ok = (n) => !savedOnly || n.level.saved;
         return {
-          nodes: [...net.nodes.values()]
-            .filter(ok)
-            .map((n) => ({
-              id: n.id,
-              levelId: n.level.id,
-              p: n.p.toArray().map((v) => +v.toFixed(3)),
-            })),
+          nodes: [...net.nodes.values()].filter(ok).map((n) => ({
+            id: n.id,
+            levelId: n.level.id,
+            p: n.p.toArray().map((v) => +v.toFixed(3)),
+          })),
           edges: net.edges
             .filter((e) => ok(e.a) && ok(e.b))
             .map((e) => [e.a.id, e.b.id]),
@@ -4366,7 +4446,15 @@ G4 Heritage Room - Heritage Room`
         const acts = ACTIVITIES.flatMap((a) => {
           const v = venues.find((x) => venueKey(x.name) === venueKey(a.venue));
           return v
-            ? [{ value: a.text, name: a.text, v, display: `${a.text} · ${level(v)}`, lvl: level(v) }]
+            ? [
+                {
+                  value: a.text,
+                  name: a.text,
+                  v,
+                  display: `${a.text} · ${level(v)}`,
+                  lvl: level(v),
+                },
+              ]
             : [];
         });
         return [
@@ -4380,12 +4468,17 @@ G4 Heritage Room - Heritage Room`
           })),
         ];
       }
-      const entryOf = (value) => value && entries().find((e) => e.value === value);
+      const entryOf = (value) =>
+        value && entries().find((e) => e.value === value);
       const venueFor = (value) => entryOf(value)?.v;
       // origin / destination: a type-to-search box in front of each (hidden) select, which still holds the chosen venue
       const venueLabel = (v) =>
         `${v.name} · ${[...new Set(v.labels.map((l) => levelTitle(l.level)))].join(", ")}`;
-      const norm = (s) => oneLine(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const norm = (s) =>
+        oneLine(s)
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
       const editDist = (a, b) => {
         let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
         for (let i = 1; i <= a.length; i++) {
@@ -4429,7 +4522,9 @@ G4 Heritage Room - Heritage Room`
           else if (looseMatch(words, name)) score = 4;
           if (score !== null) out.push({ e, score, i });
         });
-        return out.sort((a, b) => a.score - b.score || a.i - b.i).map((x) => x.e);
+        return out
+          .sort((a, b) => a.score - b.score || a.i - b.i)
+          .map((x) => x.e);
       }
       const combos = [];
       function setupCombo(box) {
@@ -4614,7 +4709,10 @@ G4 Heritage Room - Heritage Room`
       let settleTimer = 0;
       function settleView() {
         clearTimeout(settleTimer);
-        settleTimer = setTimeout(() => (stepSel >= 0 ? focusStep(stepSel) : resize()), 280); // reframe the map in the space the sheet leaves free
+        settleTimer = setTimeout(
+          () => (stepSel >= 0 ? focusStep(stepSel) : resize()),
+          280,
+        ); // reframe the map in the space the sheet leaves free
       }
       // show exactly these levels at once (no fade / drop animation) and frame them
       function showLevelsNow(list) {
@@ -4643,7 +4741,9 @@ G4 Heritage Room - Heritage Room`
         if (!sheetRes) return;
         const n = sheetRes.segs.length;
         stepSel = i;
-        showLevelsNow([sheetRes.segs[Math.max(0, Math.min(i - 1, n - 1))].level]);
+        showLevelsNow([
+          sheetRes.segs[Math.max(0, Math.min(i - 1, n - 1))].level,
+        ]);
         paintSteps();
         if (sheetH > sheetSnaps().half + 40) setSheet(sheetSnaps().half);
         else focusStep(i);
@@ -4659,12 +4759,19 @@ G4 Heritage Room - Heritage Room`
         const root = seg.level.root;
         root.updateMatrixWorld(true);
         const box = new THREE.Box3().expandByPoint(badgePos.clone());
-        for (const p of seg.pts) if (p.distanceTo(badgePos) < 28) box.expandByPoint(p);
+        for (const p of seg.pts)
+          if (p.distanceTo(badgePos) < 28) box.expandByPoint(p);
         box.expandByScalar(9);
         const whole = new THREE.Box3().setFromObject(root),
           ws = whole.getSize(new V3()),
           bs = box.getSize(new V3());
-        const scale = Math.min(1, Math.max(0.22, (Math.max(bs.x, bs.z) / Math.max(ws.x, ws.z, 1)) * 1.2));
+        const scale = Math.min(
+          1,
+          Math.max(
+            0.22,
+            (Math.max(bs.x, bs.z) / Math.max(ws.x, ws.z, 1)) * 1.2,
+          ),
+        );
         const c = root.localToWorld(box.getCenter(new V3()));
         const t0 = orbit.target.clone(),
           p0 = camera.position.clone(),
@@ -4774,7 +4881,12 @@ G4 Heritage Room - Heritage Room`
           const s = sheetSnaps();
           let target;
           if (!moved)
-            target = sheetH < s.half - 20 ? s.half : sheetH < s.full - 20 ? s.full : s.half;
+            target =
+              sheetH < s.half - 20
+                ? s.half
+                : sheetH < s.full - 20
+                  ? s.full
+                  : s.half;
           else {
             const bias = sheetH - vel * 8; // a flick carries on to the next stop
             target = [s.min, s.half, s.full].reduce((a, b) =>
@@ -4880,17 +4992,19 @@ G4 Heritage Room - Heritage Room`
       };
       resize();
       animate();
-      init().catch((err) => {
-        status(
-          `Could not load the models: ${err.message}. Start this project using START.cmd.`,
-        );
-        console.error(err);
-      }).finally(() => {
-        // the levels are in (or loading failed and the message says why): remove the spinner
-        const loader = $("loader");
-        loader.classList.add("done");
-        setTimeout(() => loader.remove(), 400);
-      });
+      init()
+        .catch((err) => {
+          status(
+            `Could not load the models: ${err.message}. Start this project using START.cmd.`,
+          );
+          console.error(err);
+        })
+        .finally(() => {
+          // the levels are in (or loading failed and the message says why): remove the spinner
+          const loader = $("loader");
+          loader.classList.add("done");
+          setTimeout(() => loader.remove(), 400);
+        });
     </script>
   </body>
 </html>
