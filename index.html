@@ -4579,9 +4579,10 @@ G4 Heritage Room - Heritage Room`
           }),
         );
         if (phone.matches) {
-          // phone: the menu drops to a half-height sheet, every level shows with the whole route at once
+          // phone: the menu drops to a half-height sheet and the map starts at step 1, one level at a time
           enterSheet(res);
           await playRoute(res, true);
+          selectStep(0);
         } else await playRoute(res);
       }
 
@@ -4608,7 +4609,7 @@ G4 Heritage Room - Heritage Room`
       let settleTimer = 0;
       function settleView() {
         clearTimeout(settleTimer);
-        settleTimer = setTimeout(resize, 280); // reframe the map in the space the sheet leaves free
+        settleTimer = setTimeout(() => (stepSel >= 0 ? focusStep(stepSel) : resize()), 280); // reframe the map in the space the sheet leaves free
       }
       // show exactly these levels at once (no fade / drop animation) and frame them
       function showLevelsNow(list) {
@@ -4617,7 +4618,7 @@ G4 Heritage Room - Heritage Room`
         for (const l of levels) {
           l.root.visible = list.includes(l);
           if (l.fadeMats) setFade(l, 1);
-          l.labelFade = list.length > 1 ? 0 : 1; // the stacked overview shows just the route, without every label piled on top
+          l.labelFade = 1;
           l.model.position.y = l.modelY;
         }
         userMoved = false;
@@ -4640,10 +4641,44 @@ G4 Heritage Room - Heritage Room`
         showLevelsNow([sheetRes.segs[Math.max(0, Math.min(i - 1, n - 1))].level]);
         paintSteps();
         if (sheetH > sheetSnaps().half + 40) setSheet(sheetSnaps().half);
-        else settleView();
+        else focusStep(i);
       }
+      // zoom in on a step: its numbered badge together with the dotted red line leading to it
+      function focusStep(i) {
+        if (!sheetRes) return;
+        const segs = sheetRes.segs,
+          seg = segs[Math.max(0, Math.min(i - 1, segs.length - 1))],
+          badgePos = sheetRes.stepBadges[i].position;
+        userMoved = false;
+        resize(); // refits this level in the space the sheet leaves free
+        const root = seg.level.root;
+        root.updateMatrixWorld(true);
+        const box = new THREE.Box3().expandByPoint(badgePos.clone());
+        for (const p of seg.pts) if (p.distanceTo(badgePos) < 28) box.expandByPoint(p);
+        box.expandByScalar(9);
+        const whole = new THREE.Box3().setFromObject(root),
+          ws = whole.getSize(new V3()),
+          bs = box.getSize(new V3());
+        const scale = Math.min(1, Math.max(0.22, (Math.max(bs.x, bs.z) / Math.max(ws.x, ws.z, 1)) * 1.2));
+        const c = root.localToWorld(box.getCenter(new V3()));
+        const t0 = orbit.target.clone(),
+          p0 = camera.position.clone(),
+          off = p0.clone().sub(t0).multiplyScalar(scale),
+          t1 = c.clone(),
+          p1 = c.clone().add(off);
+        const my = ++zoomToken;
+        userMoved = true; // keeps the zoom when the sheet is resized
+        tween(550, (k) => {
+          if (my !== zoomToken) return;
+          const e = easeOutCubic(k);
+          orbit.target.lerpVectors(t0, t1, e);
+          camera.position.lerpVectors(p0, p1, e);
+        });
+      }
+      let zoomToken = 0;
       function showOverview() {
         stepSel = -1;
+        zoomToken++;
         showLevelsNow(shownLevels());
         paintSteps();
       }
@@ -4658,9 +4693,7 @@ G4 Heritage Room - Heritage Room`
             : "Route found";
         document.body.classList.add("dir-sheet");
         setSheet(sheetSnaps().half, false);
-        showLevelsNow(shownLevels());
         resize();
-        paintSteps();
       }
       function exitSheet(restore = true) {
         document.body.classList.remove("dir-sheet", "sheet-full", "sheet-drag");
