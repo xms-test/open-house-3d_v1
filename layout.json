@@ -751,8 +751,7 @@
       "size": 1,
       "color": "white",
       "blocks": [
-        "Hall | floor",
-        "Stage | floor"
+        "Hall"
       ]
     },
     {
@@ -822,15 +821,15 @@
       "text": "Bouldering Wall",
       "levelId": "level-2",
       "position": [
-        13.071521810539814,
+        -0.9440754385117671,
         6.133614994196414,
-        37.85742836687182
+        28.76418084301325
       ],
       "visible": true,
       "icon": null,
       "size": 1,
       "blocks": [
-        "Hall"
+        "Hall | floor.002"
       ]
     },
     {

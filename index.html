@@ -2187,6 +2187,25 @@ const handles = new TransformControls(camera, renderer.domElement);
               seen.add(q);
               queue.push(q);
             }
+        // Floors of different colours under one room name are separate blocks (e.g. the orange Bouldering Wall strip inside
+        // "Hall" next to the purple hall): keep the floors coloured like the clicked one, plus the parts that touch them.
+        const isFloor = (p) => / \| floor/.test(rawName(p.o));
+        const hex = (p) => (redMeshes.get(p.o) ?? p.o.material)?.color?.getHex();
+        const floors = queue.filter(isFloor);
+        if (new Set(floors.map(hex)).size > 1) {
+          // started from a wall or the room's name text: use the floor it sits on
+          const anchor = isFloor(first)
+            ? first
+            : (floors.find((f) => f.box.intersectsBox(first.box)) ?? floors[0]);
+          const keep = floors.filter((f) => hex(f) === hex(anchor));
+          return queue
+            .filter((p) =>
+              isFloor(p)
+                ? keep.includes(p)
+                : keep.some((f) => f.box.intersectsBox(p.box)),
+            )
+            .map((p) => p.o);
+        }
         return [...seen].map((p) => p.o);
       }
       // A block is saved under a stable id: the name of its floor part (or its first part). Older saves hold just the room name; that still finds its floor.
