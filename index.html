@@ -1812,8 +1812,9 @@ const handles = new TransformControls(camera, renderer.domElement);
         };
         const best = framing(0),
           dir = best.dir; // same viewing angle as the desktop, just zoomed out until the whole level fits
+        const PHONE_ZOOM = 2; // phone only: start this many times closer than "whole level fits" (1 = old view, 2 = about twice as big). Pinch out to see everything.
         const distance =
-          best.needed * (ins ? 1.16 : 1.2) * (view.fitScale ?? 1);
+          (best.needed * (ins ? 1.16 / PHONE_ZOOM : 1.2) * (view.fitScale ?? 1));
         fitDistance = Math.min(Math.max(distance, 10), orbit.maxDistance);
         const opening = !userMoved && shown === 1 && !ins; // the opening view of a single level is view.zoom times closer than the fit distance, and moved by view.shift
         const target = opening ? center.clone().add(view.shift) : center;
