@@ -3383,48 +3383,49 @@ const handles = new TransformControls(camera, renderer.domElement);
       let searchHits = [],
         searchActive = -1;
       const oneLine = (s) => s.replace(/\s*\n\s*/g, " ").trim();
+      // code-only labels (A1, B4 - 8 ...) stay on the map but are left out of the search and the origin / destination lists
+      const isCode = (s) => /^[ABC]\s?\d+(\s*-\s*\d+)?$/i.test(oneLine(s));
       // programmes and activities, each pointing at the map label of the venue to locate
-      const ACTIVITIES = `IP1 English Language & Literature - Mediated Learning Lab
-IP2 Mother Tongue Languages - HMTL Room
-IP3 Humanities - CO:LABs, 1, 2, 3
-IP4 Aesthetics - Library
-IP5 Makers - MakerXpace
-IP6 Mathematics - Smart Rooms
-IP7 Science - Smart Rooms
-CCA1 Debate - Outside L1 staffroom
-CCA 2 Media Club - Outside L1 staffroom
-CCA3 Art Club - Outside L1 staffroom
-CCA4 Badminton - Indoor Sports Hall
-CCA5 Cross Country - Indoor Sports Hall
-CCA6 Shooting - Indoor Sports Hall
-CCA7 Floorball - Indoor Sports Hall
-CCA8 Volleyball - Indoor Sports Hall
-CCA9 Rockclimbing - Bouldering Wall
-CCA10 Boys’ Brigade - School Canteen
-CCA11 Girls’ Brigade - School Canteen
-CCA12 St. John Brigade - School Canteen
-CCA13 National Cadet Corps - School Canteen
-CCA14 Chinese Dance - Reflections Theatre
-CCA15 Band - Reflections Theatre
-CCA16 Guzheng - Reflections Theatre
-CCA17 Choir - Reflections Theatre
-CCA18 Drama - Reflections Theatre
-TD1 Cognitive - School Hall
-TD2 Psychomotor - School Hall
-TD3 Community - School Hall
-TD4 Aesthetics - School Hall
-TD5 Leadership - School Hall
-G1 Info Booth - Foyer
-G2 First Aid - Foyer
-G3 Parent Support Group Booth - Foyer
-G4 Heritage Room - Heritage Room`
+      const ACTIVITIES = `A1 English Language & Literature - Mediated Learning Lab
+A2 Mother Tongue Languages - HMTL Room
+A3 Humanities - CO:LAB A3
+A4 Aesthetics - Library
+A5 Makers - MakerXpace
+A6 Mathematics - Smart Rooms 1 & 2
+A7 Science - Smart Rooms 1 & 2
+B1 Debate - Outside Staff room 1
+B2 Media Club - Outside Staff room 1
+B3 Art Club - Outside Staff room 1
+B4 Badminton (Girls) - Indoor Sports Hall
+B5 Cross-Country - Indoor Sports Hall
+B6 Shooting - Indoor Sports Hall
+B7 Floorball (Boys) - Indoor Sports Hall
+B8 Volleyball - Indoor Sports Hall
+B9 Rockclimbing - Bouldering Wall
+B10 The Boys’ Brigade - Canteen
+B11 The Girls’ Brigade - Canteen
+B12 St John Brigade - Canteen
+B13 National Cadet Corps (Land) - Canteen
+B14 Chinese Dance - Reflections Theatre
+B15 Symphonic Band - Reflections Theatre
+B16 Guzheng Ensemble - Reflections Theatre
+B17 Choir - Reflections Theatre
+B18 Drama (English) - Reflections Theatre
+C1 Information - Foyer
+C2 Parents@Xinmin - Foyer
+C3 Alumni Sharing - CO:LAB C3
+C4 TD - Cognitive - School Hall
+C5 TD - Psychomotor - School Hall
+C6 TD - Community - School Hall
+C7 TD - Aesthetics - School Hall
+C8 TD - Leadership - School Hall`
         .split("\n")
         .map((line) => {
           const i = line.lastIndexOf(" - ");
           return { text: line, venue: line.slice(i + 3).trim() };
         });
       // venue names as written above that differ from the label on the map
-      const VENUE_ALIAS = { "hmtl room": "higher mt room", library: "school library" };
+      const VENUE_ALIAS = { "hmtl room": "higher mt room", library: "school library", "co lab a3": "a3", "co lab c3": "c3" };
       const venueKey = (s) => {
         const k = oneLine(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
         return VENUE_ALIAS[k] || k;
@@ -3451,7 +3452,7 @@ G4 Heritage Room - Heritage Room`
         });
         searchHits = [
           ...acts,
-          ...rooms.map((l) => ({ name: oneLine(l.text), label: l })),
+          ...rooms.filter((l) => !isCode(l.text)).map((l) => ({ name: oneLine(l.text), label: l })),
         ].filter(
           (h) =>
             !q ||
@@ -4426,7 +4427,7 @@ G4 Heritage Room - Heritage Room`
         });
         return [
           ...acts,
-          ...venues.map((v) => ({
+          ...venues.filter((v) => !isCode(v.name)).map((v) => ({
             value: v.name,
             name: v.name,
             v,
